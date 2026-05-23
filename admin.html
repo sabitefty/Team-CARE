@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TEAM CARE ADMIN</title>
+
+  <style>
+    body{
+      background:#0a0a0a;
+      color:white;
+      font-family:Arial;
+      padding:40px;
+    }
+
+    input, textarea{
+      width:100%;
+      padding:12px;
+      margin-top:10px;
+      background:#111;
+      border:1px solid #444;
+      color:white;
+    }
+
+    button{
+      margin-top:20px;
+      padding:12px 25px;
+      background:#7c3aed;
+      border:none;
+      color:white;
+      cursor:pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h1>TEAM CARE ADMIN PANEL</h1>
+
+<input type="text" id="title" placeholder="Achievement Title">
+
+<textarea id="desc" placeholder="Description"></textarea>
+
+<button onclick="addAchievement()">
+Add Achievement
+</button>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script src="firebase-config.js"></script>
+
+<script>
+
+const db = firebase.firestore();
+
+function addAchievement(){
+
+  const title = document.getElementById("title").value;
+  const desc = document.getElementById("desc").value;
+
+  db.collection("achievements").add({
+    title: title,
+    description: desc,
+    createdAt: new Date()
+  })
+
+  .then(()=>{
+    alert("Achievement Added!");
+  })
+
+  .catch((error)=>{
+    console.log(error);
+  });
+
+}
+
+</script>
+
+</body>
+</html>
