@@ -1,410 +1,2046 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CARE Research Team – Technology For Humanity</title>
+<title>Team C.A.R.E – Technology For Humanity</title>
 <meta name="description" content="Team C.A.R.E. (Controlled Assistive Responsive Equipment) is a student research team from Bangladesh developing assistive technologies to empower independence and improve lives.">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+/* ══════════════════════════════════════════════
+   THEME VARIABLES
+══════════════════════════════════════════════ */
 :root {
   --blue: #2979ff;
   --blue-light: #82b1ff;
   --blue-glow: rgba(41,121,255,0.35);
+  --blue-deep: #1a4fd6;
+  --accent-gold: #c8a84b;
+  --electric: #00e5ff;
+  --electric2: #7c4dff;
+
   --bg: #040810;
   --bg2: #070d1a;
   --surface: #0c1628;
   --surface2: #111e35;
+  --surface3: #162444;
   --text: #e8eaf6;
+  --text-dim: #b0bec5;
   --muted: #7986cb;
   --border: rgba(41,121,255,0.18);
+  --border-strong: rgba(41,121,255,0.35);
+  --shadow-color: rgba(0,0,0,0.6);
+  --glass: rgba(12,22,40,0.7);
+  --glass-border: rgba(41,121,255,0.2);
 }
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;overflow-x:hidden;}
-::-webkit-scrollbar{width:4px;}
-::-webkit-scrollbar-track{background:var(--bg);}
-::-webkit-scrollbar-thumb{background:var(--blue);border-radius:2px;}
 
-/* ── NAV ── */
-nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:16px 60px;background:rgba(4,8,16,0.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);transition:padding .3s;}
-.nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none; height: 40px;}
-.nav-logo svg { height: 100%; width: auto; filter: drop-shadow(0 0 10px rgba(41,121,255,0.4)); }
-.nav-links{display:flex;gap:28px;list-style:none;}
-.nav-links a{color:var(--muted);text-decoration:none;font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:600;transition:color .2s;padding:4px 0;border-bottom:2px solid transparent;}
-.nav-links a:hover,.nav-links a.active{color:var(--blue-light);border-bottom-color:var(--blue);}
-.btn-join{padding:10px 24px;border:1.5px solid var(--blue);background:transparent;color:var(--blue-light);font-family:'Rajdhani';font-size:12px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border-radius:4px;transition:all .2s;text-decoration:none;}
-.btn-join:hover{background:var(--blue);color:#fff;box-shadow:0 0 24px var(--blue-glow);}
-.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;}
-.hamburger span{width:24px;height:2px;background:var(--blue-light);border-radius:2px;transition:all .3s;}
-.mobile-menu{display:none;position:fixed;top:70px;left:0;right:0;background:rgba(4,8,16,0.98);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:20px;z-index:199;flex-direction:column;gap:4px;}
-.mobile-menu.open{display:flex;}
-.mobile-menu a{color:var(--muted);text-decoration:none;font-size:14px;letter-spacing:2px;text-transform:uppercase;font-weight:600;padding:14px 10px;border-bottom:1px solid rgba(41,121,255,0.08);}
-.mobile-menu a:hover{color:var(--blue-light);}
+[data-theme="light"] {
+  --bg: #ffffff;
+  --bg2: #f4f7fe;
+  --surface: #ffffff;
+  --surface2: #f0f4ff;
+  --surface3: #e8eeff;
+  --text: #0a1628;
+  --text-dim: #1e3a5f;
+  --muted: #3d5a80;
+  --border: rgba(41,100,200,0.12);
+  --border-strong: rgba(41,100,200,0.3);
+  --shadow-color: rgba(41,100,200,0.1);
+  --glass: rgba(255,255,255,0.92);
+  --glass-border: rgba(41,100,200,0.18);
+  --blue-glow: rgba(41,121,255,0.2);
+  --electric: #0077cc;
+  --blue: #1a5fd4;
+  --blue-light: #1a4fbf;
+  --muted-text: #2d4a6e;
+}
 
-/* ── HERO / MOON ── */
-#hero{min-height:100vh;display:flex;align-items:center;position:relative;overflow:hidden;padding:120px 60px 80px;}
-.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 80% at 72% 50%,rgba(41,121,255,0.08) 0%,transparent 70%),var(--bg);}
-.star-canvas{position:absolute;inset:0;}
-/* MOON */
-.moon-wrap{position:absolute;right:5%;top:50%;transform:translateY(-50%);width:480px;height:480px;pointer-events:none;}
-.moon{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 35% 35%,#1a2a4a 0%,#0a1428 40%,#040810 100%);box-shadow:0 0 60px rgba(41,121,255,0.2),0 0 120px rgba(41,121,255,0.1),inset -30px -20px 60px rgba(0,0,50,0.8);border:1px solid rgba(41,121,255,0.25);}
-.moon::before{content:'';position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(130,177,255,0.12) 0%,transparent 50%);border-radius:50%;}
-.moon-crater{position:absolute;border-radius:50%;background:rgba(0,0,30,0.4);border:1px solid rgba(41,121,255,0.1);}
-.moon-ring{position:absolute;inset:-30px;border-radius:50%;border:1px solid rgba(41,121,255,0.25);animation:ringPulse 5s ease-in-out infinite;}
-.moon-ring2{position:absolute;inset:-70px;border-radius:50%;border:1px solid rgba(41,121,255,0.12);animation:ringPulse 5s ease-in-out infinite 1.5s;}
-.moon-ring3{position:absolute;inset:-120px;border-radius:50%;border:1px solid rgba(41,121,255,0.07);animation:ringPulse 5s ease-in-out infinite 3s;}
-.moon-beam{position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:2px;height:200px;background:linear-gradient(to bottom,rgba(41,121,255,0.8),rgba(41,121,255,0.1));filter:blur(1px);}
-@keyframes ringPulse{0%,100%{opacity:0.6;transform:scale(1);}50%{opacity:1;transform:scale(1.02);}}
-.moon-float{animation:moonFloat 8s ease-in-out infinite;}
-@keyframes moonFloat{0%,100%{transform:translateY(-50%);}50%{transform:translateY(calc(-50% - 18px));}}
+/* ══════════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  overflow-x: hidden;
+  cursor: none;
+  transition: background 0.4s, color 0.4s;
+}
 
-/* stars */
-.star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--dur,3s) ease-in-out infinite var(--delay,0s);}
-@keyframes twinkle{0%,100%{opacity:0.1;}50%{opacity:var(--max-op,0.8);}}
+/* ══════════════════════════════════════════════
+   CUSTOM CURSOR — smooth magnetic style
+══════════════════════════════════════════════ */
+#cursor-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 1.5px solid rgba(41,121,255,0.7);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s cubic-bezier(0.23,1,0.32,1),
+              height 0.4s cubic-bezier(0.23,1,0.32,1),
+              border-color 0.3s,
+              background 0.3s,
+              opacity 0.3s;
+  mix-blend-mode: normal;
+  backdrop-filter: blur(1px);
+}
+#cursor-dot {
+  position: fixed;
+  width: 5px; height: 5px;
+  background: var(--electric);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s, height 0.2s, background 0.2s, transform 0.1s;
+  box-shadow: 0 0 12px var(--electric), 0 0 4px #fff;
+}
+.cursor-hover #cursor-ring {
+  width: 52px; height: 52px;
+  border-color: rgba(0,229,255,0.6);
+  background: rgba(0,229,255,0.06);
+}
+.cursor-hover #cursor-dot {
+  width: 3px; height: 3px;
+  background: #fff;
+}
+.cursor-click #cursor-ring {
+  width: 28px; height: 28px;
+  border-color: rgba(0,229,255,0.9);
+  background: rgba(0,229,255,0.12);
+}
 
-.hero-content{position:relative;max-width:580px;z-index:2;}
-.hero-eyebrow{font-size:11px;letter-spacing:5px;text-transform:uppercase;color:var(--blue);margin-bottom:20px;display:flex;align-items:center;gap:12px;}
-.hero-eyebrow::before{content:'';width:40px;height:1px;background:var(--blue);}
-.hero-title{font-family:'Bebas Neue';font-size:clamp(70px,10vw,116px);line-height:0.9;letter-spacing:2px;color:#fff;margin-bottom:24px;}
-.hero-title .accent{color:var(--blue);}
-.hero-desc{font-size:17px;color:var(--muted);line-height:1.7;margin-bottom:40px;max-width:480px;}
-.hero-desc strong {color: #fff;}
-.hero-btns{display:flex;gap:16px;flex-wrap:wrap;}
-.btn-primary{padding:14px 32px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-family:'Rajdhani';font-size:14px;letter-spacing:2px;text-transform:uppercase;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:10px;transition:box-shadow .3s,transform .2s;box-shadow:0 4px 30px rgba(41,121,255,0.4);}
-.btn-primary:hover{box-shadow:0 4px 50px rgba(41,121,255,0.6);transform:translateY(-2px);}
-.btn-secondary{padding:14px 32px;background:transparent;color:var(--text);border:1.5px solid rgba(255,255,255,0.2);border-radius:4px;font-family:'Rajdhani';font-size:14px;letter-spacing:2px;text-transform:uppercase;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:10px;transition:border-color .2s,color .2s;}
-.btn-secondary:hover{border-color:var(--blue);color:var(--blue-light);}
-.scroll-indicator{position:absolute;right:20px;top:50%;transform:translateY(-50%);writing-mode:vertical-rl;font-size:10px;letter-spacing:4px;color:var(--muted);text-transform:uppercase;display:flex;align-items:center;gap:12px;}
-.scroll-indicator::after{content:'';width:1px;height:60px;background:var(--blue);}
+/* ══════════════════════════════════════════════
+   SCROLLBAR
+══════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, var(--electric), var(--blue));
+  border-radius: 4px;
+}
 
-/* ── COMMONS ── */
-section{padding:100px 60px;}
-.section-eyebrow{text-align:center;font-size:11px;letter-spacing:6px;text-transform:uppercase;color:var(--blue);margin-bottom:16px;}
-.section-title{text-align:center;font-family:'Bebas Neue';font-size:clamp(36px,5vw,60px);letter-spacing:6px;color:#fff;margin-bottom:60px;}
-.section-title .dot{color:var(--blue);}
-.btn-outline{padding:13px 30px;border:1.5px solid var(--blue);color:var(--blue-light);background:transparent;border-radius:4px;font-family:'Rajdhani';font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:10px;transition:background .2s,color .2s;}
-.btn-outline:hover{background:var(--blue);color:#fff;}
+/* ══════════════════════════════════════════════
+   THEME TOGGLE — redesigned
+══════════════════════════════════════════════ */
+.theme-toggle {
+  position: relative;
+  width: 68px; height: 34px;
+  background: var(--surface2);
+  border: 1px solid var(--border-strong);
+  border-radius: 17px;
+  cursor: pointer;
+  transition: background 0.3s, box-shadow 0.3s;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 0 transparent;
+}
+.theme-toggle:hover {
+  box-shadow: 0 0 18px rgba(41,121,255,0.3);
+}
+.theme-toggle-track {
+  position: absolute; inset:3px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.theme-toggle-bg {
+  position: absolute; inset:0;
+  background: linear-gradient(135deg, #040810 0%, #0c1628 100%);
+  transition: opacity 0.4s;
+}
+[data-theme="light"] .theme-toggle-bg {
+  background: linear-gradient(135deg, #c8daff 0%, #7fbfff 100%);
+}
+.theme-toggle-thumb {
+  position: absolute;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  top: 4px; left: 5px;
+  background: linear-gradient(135deg, #1a237e, var(--blue));
+  box-shadow: 0 0 10px rgba(41,121,255,0.6), inset 0 1px 2px rgba(255,255,255,0.2);
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), background 0.4s, box-shadow 0.4s;
+  display: flex; align-items:center; justify-content:center;
+  font-size: 12px;
+}
+[data-theme="light"] .theme-toggle-thumb {
+  transform: translateX(34px);
+  background: linear-gradient(135deg, #f9c74f, #f4a261);
+  box-shadow: 0 0 14px rgba(249,199,79,0.7), inset 0 1px 2px rgba(255,255,255,0.4);
+}
+.toggle-moon { display:inline; }
+.toggle-sun { display:none; }
+[data-theme="light"] .toggle-moon { display:none; }
+[data-theme="light"] .toggle-sun { display:inline; }
 
-/* ── WHAT WE DO ── */
-#what{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
-.cards-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;max-width:1200px;margin:0 auto;}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:36px 28px;transition:border-color .3s,transform .3s,box-shadow .3s;position:relative;overflow:hidden;}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--blue),transparent);transform:scaleX(0);transition:transform .4s;}
-.card:hover{transform:translateY(-6px);border-color:rgba(41,121,255,0.4);box-shadow:0 20px 60px rgba(41,121,255,0.1);}
-.card:hover::before{transform:scaleX(1);}
-.card-icon{width:52px;height:52px;border-radius:10px;background:rgba(41,121,255,0.12);display:grid;place-items:center;margin-bottom:20px;font-size:22px;border:1px solid rgba(41,121,255,0.2);}
-.card h3{font-family:'Bebas Neue';letter-spacing:3px;font-size:22px;margin-bottom:12px;color:#fff;}
-.card p{font-size:15px;color:var(--muted);line-height:1.7;}
+/* ══════════════════════════════════════════════
+   WELCOME POP-UP
+══════════════════════════════════════════════ */
+#welcome-popup {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(4,8,16,0.85);
+  backdrop-filter: blur(12px);
+  opacity: 0; animation: popupFadeIn 0.6s 0.4s ease forwards;
+}
+@keyframes popupFadeIn { to { opacity:1; } }
+#welcome-popup.hide {
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+.welcome-box {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+  border: 1px solid rgba(0,229,255,0.3);
+  border-radius: 24px;
+  padding: 52px 60px;
+  max-width: 520px; width: 90%;
+  text-align: center; position: relative;
+  box-shadow:
+    0 0 0 1px rgba(0,229,255,0.1),
+    0 40px 100px rgba(0,0,0,0.6),
+    0 0 60px rgba(41,121,255,0.15);
+  transform: translateY(20px) scale(0.97);
+  animation: popupSlideIn 0.7s 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  opacity: 0;
+}
+@keyframes popupSlideIn { to { transform: translateY(0) scale(1); opacity:1; } }
+.welcome-logo {
+  font-family: 'Bebas Neue'; font-size: 42px; letter-spacing: 8px;
+  background: linear-gradient(135deg, var(--blue), var(--electric));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+.welcome-sub {
+  font-size: 18px; letter-spacing: 6px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 36px; font-weight: 600;
+}
+.welcome-msg {
+  font-size: 16px; color: var(--text-dim); line-height: 1.7; margin-bottom: 32px;
+}
+.welcome-msg strong { color: var(--text); }
+.welcome-close {
+  padding: 14px 40px;
+  background: linear-gradient(135deg, var(--blue), var(--blue-deep));
+  border: none; border-radius: 8px;
+  color: #fff; font-family:'Rajdhani'; font-size: 13px;
+  letter-spacing: 3px; text-transform: uppercase; font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 30px rgba(41,121,255,0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.welcome-close:hover { transform: translateY(-2px); box-shadow: 0 8px 40px rgba(41,121,255,0.6); }
+.welcome-deco {
+  position: absolute; top: -1px; left: 20%; right: 20%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--electric), transparent);
+}
 
-/* ── ABOUT ── */
-#about{background:var(--bg);}
-.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;max-width:1200px;margin:0 auto;}
-.about-eyebrow{font-size:11px;letter-spacing:6px;text-transform:uppercase;color:var(--blue);margin-bottom:16px;}
-.about-title{font-family:'Bebas Neue';font-size:clamp(40px,5vw,72px);line-height:0.95;color:#fff;margin-bottom:28px;}
-.about-title .accent{color:var(--blue);}
-.about-text{font-size:16px;color:var(--muted);line-height:1.8;margin-bottom:36px;}
-.about-text strong {color: #fff;}
-.project-details{max-width:900px;margin:0 auto 32px;font-size:15px;color:var(--muted);line-height:1.8;}
-.project-features{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:16px;max-width:900px;margin:0 auto 32px;padding:0;list-style:none;}
-.project-features li{position:relative;padding-left:24px;color:var(--text);line-height:1.8;}
-.project-features li::before{content:'•';position:absolute;left:0;top:0;color:var(--blue);}
-@media(max-width:768px){.project-features{grid-template-columns:1fr;}}
-.video-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;position:relative;aspect-ratio:16/10;display:flex;flex-direction:column;justify-content:flex-end;}
-.video-bg{position:absolute;inset:0;background:linear-gradient(135deg,#070d1a,#0c1a35,#040810);display:flex;align-items:center;justify-content:center;}
-.wheelchair-svg{width:200px;opacity:0.22;filter:drop-shadow(0 0 40px var(--blue));}
-.play-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:rgba(41,121,255,0.9);display:grid;place-items:center;font-size:22px;cursor:pointer;border:2px solid rgba(255,255,255,0.3);box-shadow:0 0 40px var(--blue-glow);transition:transform .2s,box-shadow .2s;}
-.play-btn:hover{transform:translate(-50%,-50%) scale(1.1);box-shadow:0 0 60px var(--blue-glow);}
-.video-footer{position:relative;padding:20px;background:rgba(7,13,26,0.9);}
-.video-footer h4{font-family:'Bebas Neue';letter-spacing:3px;font-size:20px;color:#fff;}
-.video-footer p{font-size:13px;color:var(--muted);margin-bottom:8px;}
-.watch-link{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--blue);text-decoration:none;font-weight:700;}
+/* ══════════════════════════════════════════════
+   NAV
+══════════════════════════════════════════════ */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index:200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 60px;
+  background: var(--glass);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--glass-border);
+  transition: padding .3s, background 0.4s;
+}
+.nav-logo { display:flex; align-items:center; gap:12px; text-decoration:none; height:40px; }
+.nav-logo svg { height:100%; width:auto; filter:drop-shadow(0 0 10px rgba(41,121,255,0.5)); }
+.nav-links { display:flex; gap:24px; list-style:none; }
+.nav-links a {
+  color: var(--muted); text-decoration: none;
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight:600;
+  transition: color .2s; padding: 4px 0; border-bottom: 2px solid transparent; position: relative;
+}
+.nav-links a::after {
+  content:''; position:absolute; bottom:-2px; left:0; right:0;
+  height:2px; background:var(--blue); transform:scaleX(0); transition:transform 0.3s;
+}
+.nav-links a:hover::after, .nav-links a.active::after { transform:scaleX(1); }
+.nav-links a:hover, .nav-links a.active { color:var(--blue-light); }
+.btn-join {
+  padding: 9px 22px; border: 1.5px solid var(--blue);
+  background: transparent; color: var(--blue-light);
+  font-family:'Rajdhani'; font-size:11px; letter-spacing:2px; text-transform:uppercase;
+  cursor: pointer; border-radius: 4px; transition: all .25s; text-decoration:none;
+  box-shadow: 0 0 16px rgba(41,121,255,0.15);
+}
+.btn-join:hover { background: var(--blue); color:#fff; box-shadow: 0 0 28px var(--blue-glow); }
+.hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:4px; }
+.hamburger span { width:24px; height:2px; background:var(--blue-light); border-radius:2px; transition:all .3s; }
+.mobile-menu {
+  display:none; position:fixed; top:68px; left:0; right:0;
+  background: var(--glass); backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border); padding:16px; z-index:199;
+  flex-direction:column; gap:2px;
+}
+.mobile-menu.open { display:flex; }
+.mobile-menu a {
+  color:var(--muted); text-decoration:none; font-size:14px;
+  letter-spacing:2px; text-transform:uppercase; font-weight:600;
+  padding:12px 10px; border-bottom:1px solid rgba(41,121,255,0.06); transition: color 0.2s;
+}
+.mobile-menu a:hover { color:var(--blue-light); }
+.nav-right { display:flex; align-items:center; gap:16px; }
 
-/* ── STATS ── */
-#stats{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:60px;}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);max-width:1000px;margin:0 auto;}
-.stat-item{display:flex;align-items:center;gap:20px;padding:20px 36px;border-right:1px solid var(--border);}
-.stat-item:last-child{border-right:none;}
-.stat-icon{width:44px;height:44px;background:rgba(41,121,255,0.1);border-radius:8px;display:grid;place-items:center;font-size:18px;flex-shrink:0;border:1px solid rgba(41,121,255,0.2);}
-.stat-num{font-family:'Bebas Neue';font-size:40px;color:#fff;line-height:1;}
-.stat-label{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
+/* ══════════════════════════════════════════════
+   PAGE VIEW SYSTEM
+══════════════════════════════════════════════ */
+.page-overlay {
+  position: fixed; inset:0; z-index:500;
+  background: var(--bg);
+  display: flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  overflow-y: auto; opacity: 0; pointer-events:none;
+  transition: opacity 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+.page-overlay.active { opacity: 1; pointer-events:all; }
 
-/* ── ACHIEVEMENTS ── */
-#achievements{background:var(--bg2);border-bottom:1px solid var(--border);}
-.achieve-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;max-width:1200px;margin:0 auto;}
-.achieve-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:36px;display:flex;gap:24px;align-items:flex-start;transition:transform .3s,border-color .3s,box-shadow .3s;position:relative;overflow:hidden;}
-.achieve-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--blue),transparent);transform:scaleX(0);transition:transform .4s;}
-.achieve-card:hover{transform:translateY(-6px);border-color:rgba(41,121,255,0.4);box-shadow:0 20px 60px rgba(41,121,255,0.1);}
-.achieve-card:hover::after{transform:scaleX(1);}
-.achieve-badge{width:60px;height:60px;border-radius:12px;background:rgba(41,121,255,0.1);border:1px solid rgba(41,121,255,0.25);display:grid;place-items:center;font-size:28px;flex-shrink:0;}
-.achieve-body h3{font-family:'Bebas Neue';letter-spacing:2px;font-size:20px;color:#fff;margin-bottom:8px;}
-.achieve-body p{font-size:14px;color:var(--muted);line-height:1.6;}
-.achieve-year{font-family:'Space Mono';font-size:11px;color:var(--blue);margin-top:8px;}
+/* Page back bar — left: back, center: title */
+.page-back {
+  position: sticky; top:0; left:0; right:0; z-index:10;
+  display: flex; align-items: center;
+  padding: 18px 60px;
+  background: var(--glass); backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--glass-border);
+  width: 100%;
+}
+.page-back-btn {
+  display:flex; align-items:center; gap:10px;
+  color:var(--blue-light); text-decoration:none;
+  font-size:12px; letter-spacing:3px; text-transform:uppercase; font-weight:700;
+  cursor:pointer; background:none; border:none;
+  transition: color 0.2s, gap 0.2s;
+}
+.page-back-btn:hover { color:var(--electric); gap:14px; }
+.page-back-btn .arrow { font-size:18px; transition: transform 0.2s; }
+.page-back-btn:hover .arrow { transform: translateX(-4px); }
+.page-back-title {
+  font-family:'Bebas Neue'; font-size:20px; letter-spacing:5px;
+  color:var(--text); text-align:center;
+  position: absolute; left: 50%; transform: translateX(-50%);
+  pointer-events: none;
+}
+.page-content { padding: 60px; max-width:1300px; margin:0 auto; width:100%; }
 
-/* ── APICTA FEATURED HIGHLIGHT ── */
-.apicta-feature{max-width:1200px;margin:0 auto 32px;background:linear-gradient(180deg,rgba(41,121,255,0.04),rgba(7,13,26,0.6));padding:28px;border-radius:14px;display:flex;gap:28px;align-items:center;border:1px solid rgba(41,121,255,0.08);box-shadow:0 30px 80px rgba(41,121,255,0.08);position:relative;overflow:hidden;}
-.apicta-feature .apicta-img{width:460px;height:auto;border-radius:12px;border:1px solid rgba(41,121,255,0.12);box-shadow:0 20px 60px rgba(41,121,255,0.12);flex-shrink:0;}
-.apicta-feature .apicta-info{flex:1;}
-.apicta-feature .apicta-info h3{font-family:'Bebas Neue';font-size:40px;margin:0 0 12px;color:#fff;}
-.apicta-feature .apicta-info p{color:var(--muted);font-size:16px;line-height:1.6;margin-bottom:12px;}
-.apicta-feature .apicta-meta{display:flex;gap:18px;align-items:center;margin-top:12px;}
-.apicta-feature .apicta-meta .year{background:rgba(41,121,255,0.08);color:var(--blue);padding:8px 12px;border-radius:8px;font-family:'Space Mono';font-size:13px;font-weight:700;border:1px solid rgba(41,121,255,0.12);}
-.apicta-feature .apicta-meta .type{background:rgba(255,255,255,0.04);color:#fff;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:700;border:1px solid rgba(255,255,255,0.06);}
-@media(max-width:1100px){.apicta-feature{flex-direction:column;align-items:flex-start}.apicta-feature .apicta-img{width:100%;max-width:520px}}
+/* ══════════════════════════════════════════════
+   HERO — 3D Electric Wheelchair
+══════════════════════════════════════════════ */
+#hero {
+  min-height: 100vh; display:flex; align-items:center;
+  position:relative; overflow:hidden; padding: 120px 60px 80px;
+}
+.hero-bg {
+  position:absolute; inset:0;
+  background: var(--bg);
+  transition: background 0.4s;
+}
+.hero-bg::before {
+  content:'';
+  position:absolute; inset:0;
+  background: linear-gradient(105deg,
+    transparent 0%,
+    transparent 58%,
+    rgba(41,121,255,0.03) 58%,
+    rgba(41,121,255,0.03) 100%);
+}
 
-/* ── PROJECTS ── */
-#projects{background:var(--bg);}
-.projects-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;max-width:1200px;margin:0 auto;}
-.project-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:transform .3s,box-shadow .3s;display:flex;flex-direction:column;}
-.project-card:hover{transform:translateY(-8px);box-shadow:0 24px 60px rgba(41,121,255,0.12);}
-.project-thumb{height:190px;background:linear-gradient(135deg,var(--surface2),var(--surface));display:flex;align-items:center;justify-content:center;font-size:56px;position:relative;overflow:hidden;}
-.project-thumb::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,var(--surface));}
-.project-body{padding:24px;flex-grow:1;display:flex;flex-direction:column;}
-.project-tag{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:8px;}
-.project-body h3{font-family:'Bebas Neue';letter-spacing:2px;font-size:22px;color:#fff;margin-bottom:10px;}
-.project-body p{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:20px;flex-grow:1;}
-.project-link{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--blue);text-decoration:none;font-weight:700;display:flex;align-items:center;gap:8px;margin-top:auto;}
-.project-link:hover{color:var(--blue-light);}
 
-/* ── ROADMAP ── */
-#roadmap{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
-.roadmap-track{max-width:900px;margin:0 auto;position:relative;}
-.roadmap-track::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,transparent,var(--blue),var(--blue),transparent);transform:translateX(-50%);}
-.roadmap-item{display:flex;gap:60px;margin-bottom:60px;align-items:flex-start;}
-.roadmap-item:nth-child(even){flex-direction:row-reverse;}
-.roadmap-item:nth-child(even) .road-content{text-align:right;}
-.road-content{flex:1;}
-.road-dot{width:16px;height:16px;border-radius:50%;background:var(--blue);border:3px solid var(--bg2);box-shadow:0 0 20px var(--blue-glow);flex-shrink:0;margin-top:8px;position:relative;z-index:1;}
-.road-dot.done{background:var(--blue);}
-.road-dot.active{background:#fff;animation:dotPulse 2s ease-in-out infinite;}
-.road-dot.future{background:var(--surface2);border-color:var(--muted);}
-@keyframes dotPulse{0%,100%{box-shadow:0 0 0 0 rgba(41,121,255,0.4);}50%{box-shadow:0 0 0 10px rgba(41,121,255,0);}}
-.road-year{font-family:'Space Mono';font-size:11px;color:var(--blue);letter-spacing:2px;margin-bottom:8px;}
-.road-content h3{font-family:'Bebas Neue';letter-spacing:2px;font-size:22px;color:#fff;margin-bottom:8px;}
-.road-content p{font-size:14px;color:var(--muted);line-height:1.6;}
-.road-status{display:inline-block;margin-top:10px;padding:4px 12px;border-radius:20px;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;}
-.status-done{background:rgba(41,121,255,0.15);color:var(--blue);border:1px solid rgba(41,121,255,0.3);}
-.status-active{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);}
-.status-future{background:rgba(121,134,203,0.08);color:var(--muted);border:1px solid rgba(121,134,203,0.2);}
+/* WHEELCHAIR 3D CANVAS AREA */
+.wheelchair-scene {
+  position:absolute; right:0; top:0; bottom:0;
+  width:52%; pointer-events:none; overflow:hidden;
+}
+#wheelchairCanvas {
+  position: absolute; inset:0; width:100%; height:100%;
+}
+/* Feature labels beside wheelchair */
+.wc-features {
+  position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 14px;
+  z-index: 5;
+}
+.wc-feat {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(7,13,26,0.82);
+  border: 1px solid rgba(0,229,255,0.22);
+  border-radius: 10px; padding: 10px 16px;
+  backdrop-filter: blur(12px);
+  transform: translateX(80px); opacity:0;
+  transition: transform 0.6s cubic-bezier(0.23,1,0.32,1), opacity 0.6s;
+}
+.wc-feat.visible {
+  transform: translateX(0); opacity: 1;
+}
+[data-theme="light"] .wc-feat {
+  background: rgba(240,244,255,0.9);
+  border-color: rgba(41,121,255,0.3);
+}
+.wc-feat-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--electric); flex-shrink:0;
+  box-shadow: 0 0 8px var(--electric);
+}
+.wc-feat-text {
+  font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--text-dim); font-weight:600; white-space: nowrap;
+}
 
-/* ── GALLERY ── */
-#gallery{background:var(--bg);}
-.gallery-filter{display:flex;justify-content:center;gap:12px;margin-bottom:40px;flex-wrap:wrap;}
-.filter-btn{padding:8px 20px;background:var(--surface);border:1px solid var(--border);border-radius:40px;color:var(--muted);font-family:'Rajdhani';font-size:12px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s;}
-.filter-btn.active,.filter-btn:hover{background:var(--blue);color:#fff;border-color:var(--blue);}
-.gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:200px;gap:16px;max-width:1200px;margin:0 auto;}
-.gallery-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;cursor:pointer;transition:transform .3s,box-shadow .3s;}
-.gallery-item:hover{transform:scale(1.03);box-shadow:0 16px 50px rgba(41,121,255,0.2);z-index:2;}
-.gallery-item.wide{grid-column:span 2;}
-.gallery-item.tall{grid-row:span 2;}
-.gallery-inner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:48px;background:linear-gradient(135deg,var(--surface2),var(--surface));}
-.gallery-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(4,8,16,0.9) 0%,transparent 60%);opacity:0;transition:opacity .3s;display:flex;flex-direction:column;justify-content:flex-end;padding:20px;}
-.gallery-item:hover .gallery-overlay{opacity:1;}
-.gallery-overlay h4{color:#fff;font-size:14px;font-weight:700;letter-spacing:1px;}
-.gallery-overlay p{color:var(--blue-light);font-size:12px;letter-spacing:2px;text-transform:uppercase;}
-.lightbox{position:fixed;inset:0;background:rgba(4,8,16,0.96);z-index:999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
-.lightbox.open{opacity:1;pointer-events:all;}
-.lightbox-inner{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;max-width:600px;width:90%;text-align:center;position:relative;}
-.lightbox-close{position:absolute;top:16px;right:20px;font-size:24px;cursor:pointer;color:var(--muted);background:none;border:none;transition:color .2s;}
-.lightbox-close:hover{color:#fff;}
-.lightbox-emoji{font-size:80px;margin-bottom:20px;display:block;}
-.lightbox-inner h3{font-family:'Bebas Neue';font-size:28px;letter-spacing:3px;color:#fff;margin-bottom:10px;}
-.lightbox-inner p{color:var(--muted);font-size:15px;line-height:1.7;}
+.hero-content { position:relative; max-width:560px; z-index:2; }
+.hero-eyebrow {
+  font-size:11px; letter-spacing:5px; text-transform:uppercase; color:var(--electric);
+  margin-bottom:20px; display:flex; align-items:center; gap:12px;
+}
+.hero-eyebrow::before { content:''; width:40px; height:1px; background:var(--electric); }
+.hero-title {
+  font-family:'Bebas Neue'; font-size:clamp(70px,10vw,116px);
+  line-height:0.9; letter-spacing:2px; color:#fff; margin-bottom:24px;
+}
+[data-theme="light"] .hero-title { color:var(--text); }
+.hero-title .accent { color:var(--blue); }
+.hero-desc { font-size:17px; color:var(--muted); line-height:1.7; margin-bottom:40px; max-width:480px; }
+.hero-desc strong { color:var(--text); }
+.hero-btns { display:flex; gap:16px; flex-wrap:wrap; }
+.btn-primary {
+  padding:14px 32px; background:var(--blue); color:#fff; border:none; border-radius:4px;
+  font-family:'Rajdhani'; font-size:14px; letter-spacing:2px; text-transform:uppercase; font-weight:700;
+  cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:10px;
+  transition:box-shadow .3s,transform .2s;
+  box-shadow:0 4px 30px rgba(41,121,255,0.4), 0 1px 0 rgba(255,255,255,0.1) inset;
+}
+.btn-primary:hover { box-shadow:0 4px 50px rgba(41,121,255,0.65); transform:translateY(-2px); }
+.btn-secondary {
+  padding:14px 32px; background:transparent; color:var(--text);
+  border:1.5px solid rgba(255,255,255,0.2); border-radius:4px;
+  font-family:'Rajdhani'; font-size:14px; letter-spacing:2px; text-transform:uppercase; font-weight:700;
+  cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:10px;
+  transition:border-color .2s,color .2s, box-shadow .2s;
+}
+[data-theme="light"] .btn-secondary { border-color:rgba(41,121,255,0.3); }
+.btn-secondary:hover { border-color:var(--blue); color:var(--blue-light); box-shadow:0 4px 20px rgba(41,121,255,0.15); }
+.scroll-indicator {
+  position:absolute; right:20px; top:50%; transform:translateY(-50%);
+  writing-mode:vertical-rl; font-size:10px; letter-spacing:4px; color:var(--muted);
+  text-transform:uppercase; display:flex; align-items:center; gap:12px;
+}
+.scroll-indicator::after { content:''; width:1px; height:60px; background:var(--blue); }
 
-/* ── TEAM ── */
-#team{background:var(--bg2);border-top:1px solid var(--border);}
-.team-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:24px;max-width:1200px;margin:0 auto;}
-.member-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 20px;text-align:center;transition:transform .3s,border-color .3s;}
-.member-card:hover{transform:translateY(-6px);border-color:rgba(41,121,255,0.4);}
-.member-avatar{width:72px;height:72px;border-radius:50%;margin:0 auto 16px;background:linear-gradient(135deg,var(--blue),#1a237e);display:grid;place-items:center;font-size:28px;border:2px solid rgba(41,121,255,0.4);box-shadow:0 0 20px rgba(41,121,255,0.2);}
-.member-card h4{font-weight:700;font-size:15px;margin-bottom:4px;}
-.member-card .role{font-size:11px;color:var(--blue);letter-spacing:2px;text-transform:uppercase;}
-.member-socials{display:flex;justify-content:center;gap:10px;margin-top:14px;}
-.member-socials a{width:30px;height:30px;border-radius:50%;background:rgba(41,121,255,0.1);display:grid;place-items:center;color:var(--blue);text-decoration:none;font-size:13px;border:1px solid rgba(41,121,255,0.2);transition:background .2s;}
-.member-socials a:hover{background:var(--blue);color:#fff;}
+.hero-quick-nav {
+  position:absolute; bottom:40px; left:60px; right:60px;
+  display:flex; gap:12px; flex-wrap:wrap; z-index:2;
+}
+.hero-nav-chip {
+  padding:8px 18px; background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius:30px; color:var(--muted);
+  font-size:11px; letter-spacing:2px; text-transform:uppercase; font-weight:600;
+  cursor:pointer; transition:all 0.25s; text-decoration:none;
+  backdrop-filter:blur(12px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2), 0 1px 0 rgba(255,255,255,0.05) inset;
+}
+.hero-nav-chip:hover {
+  background:var(--blue); color:#fff; border-color:var(--blue);
+  box-shadow:0 4px 24px rgba(41,121,255,0.4); transform:translateY(-2px);
+}
 
-/* ── RECENT / NEWS ── */
-#recent{background:var(--bg);border-top:1px solid var(--border);}
-.news-header{display:flex;justify-content:space-between;align-items:flex-end;max-width:1200px;margin:0 auto 40px;}
-.news-header-left .section-eyebrow{text-align:left;}
-.news-header-left .section-title{text-align:left;margin-bottom:0;}
-.view-all{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--blue);text-decoration:none;font-weight:700;border:1px solid var(--blue);padding:10px 20px;border-radius:4px;transition:background .2s;}
-.view-all:hover{background:rgba(41,121,255,0.1);}
-.news-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;max-width:1200px;margin:0 auto;}
-.news-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:transform .3s,border-color .3s;}
-.news-card:hover{transform:translateY(-4px);border-color:rgba(41,121,255,0.3);}
-.news-thumb{height:130px;background:linear-gradient(135deg,var(--surface2),rgba(41,121,255,0.1));display:flex;align-items:center;justify-content:center;font-size:38px;}
-.news-body{padding:18px;}
-.news-date{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-family:'Space Mono';}
-.news-body h4{font-size:15px;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:12px;}
-.news-arrow{font-size:18px;color:var(--blue);text-decoration:none;}
+/* ══════════════════════════════════════════════
+   COMMONS
+══════════════════════════════════════════════ */
+section { padding:100px 60px; }
+.section-eyebrow {
+  text-align:center; font-size:11px; letter-spacing:6px; text-transform:uppercase;
+  color:var(--blue); margin-bottom:16px;
+}
+.section-title {
+  text-align:center; font-family:'Bebas Neue'; font-size:clamp(36px,5vw,60px);
+  letter-spacing:6px; color:var(--text); margin-bottom:60px;
+}
+.section-title .dot { color:var(--blue); }
+.btn-outline {
+  padding:13px 30px; border:1.5px solid var(--blue); color:var(--blue-light);
+  background:transparent; border-radius:4px; font-family:'Rajdhani'; font-size:13px;
+  letter-spacing:2px; text-transform:uppercase; font-weight:700; cursor:pointer;
+  text-decoration:none; display:inline-flex; align-items:center; gap:10px;
+  transition:background .2s,color .2s,box-shadow .2s;
+  box-shadow:0 0 16px rgba(41,121,255,0.1);
+}
+.btn-outline:hover { background:var(--blue); color:#fff; box-shadow:0 4px 24px rgba(41,121,255,0.4); }
 
-/* ── CONTACT ── */
-#contact{background:var(--bg2);border-top:1px solid var(--border);}
-.contact-grid{display:grid;grid-template-columns:1fr 1.6fr;gap:80px;max-width:1100px;margin:0 auto;}
-.contact-info h3{font-family:'Bebas Neue';font-size:42px;letter-spacing:4px;color:#fff;margin-bottom:20px;}
-.contact-info p{color:var(--muted);font-size:16px;line-height:1.8;margin-bottom:36px;}
-.contact-detail{display:flex;align-items:flex-start;gap:14px;margin-bottom:24px;}
-.contact-icon{width:42px;height:42px;background:rgba(41,121,255,0.1);border:1px solid rgba(41,121,255,0.2);border-radius:8px;display:grid;place-items:center;font-size:18px;flex-shrink:0;}
-.contact-detail-text strong{display:block;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:4px;}
-.contact-detail-text span{color:var(--muted);font-size:14px;}
-.contact-form{display:grid;gap:16px;}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.form-group label{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px;}
-.form-group input,.form-group textarea,.form-group select{width:100%;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Rajdhani';font-size:15px;outline:none;transition:border-color .2s;resize:none;}
-.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--blue);}
-.form-group input::placeholder,.form-group textarea::placeholder{color:rgba(121,134,203,0.4);}
-.form-group select option{background:var(--surface2);}
+/* ══════════════════════════════════════════════
+   SCROLL REVEAL TAGLINES (float up effect)
+══════════════════════════════════════════════ */
+.tagline-reveal {
+  overflow: hidden;
+}
+.tagline-reveal .tag-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(100%);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.23,1,0.32,1);
+}
+.tagline-reveal.revealed .tag-word {
+  opacity: 1; transform: translateY(0);
+}
 
-/* ── FOOTER ── */
-footer{background:var(--bg);border-top:1px solid var(--border);padding:70px 60px 30px;}
-.footer-main{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:60px;max-width:1200px;margin:0 auto 60px;}
-.footer-brand .footer-logo{font-family:'Bebas Neue';font-size:32px;letter-spacing:6px;color:#fff;margin-bottom:6px;}
-.footer-brand .footer-logo span{color:var(--blue);}
-.footer-brand .footer-sub{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--muted);margin-bottom:20px;}
-.footer-brand p{font-size:14px;color:var(--muted);line-height:1.7;max-width:280px;}
-.footer-col h5{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--blue);margin-bottom:20px;font-weight:700;}
-.footer-col a{display:block;color:var(--muted);text-decoration:none;font-size:14px;margin-bottom:12px;transition:color .2s;}
-.footer-col a:hover{color:var(--text);}
-.social-links{display:flex;gap:12px;margin-top:20px;}
-.social-link{width:40px;height:40px;border-radius:8px;background:var(--surface);border:1px solid var(--border);display:grid;place-items:center;color:var(--muted);text-decoration:none;font-size:16px;transition:all .2s;}
-.social-link:hover{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 0 20px var(--blue-glow);}
-.footer-divider{max-width:1200px;margin:0 auto;height:1px;background:var(--border);}
-.footer-bottom{max-width:1200px;margin:30px auto 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
-.footer-copy{font-family:'Space Mono';font-size:11px;color:rgba(121,134,203,0.4);}
-.footer-dev{font-family:'Space Mono';font-size:11px;color:rgba(121,134,203,0.5);}
-.footer-dev span{color:var(--blue);}
+/* ══════════════════════════════════════════════
+   WHAT WE DO
+══════════════════════════════════════════════ */
+#what { background:var(--bg2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.cards-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:24px; max-width:1200px; margin:0 auto; }
+.card {
+  background:var(--surface); border:1px solid var(--border); border-radius:14px;
+  padding:36px 28px; transition:border-color .3s, transform .3s, box-shadow .3s;
+  position:relative; overflow:hidden;
+  box-shadow:0 4px 24px rgba(0,0,0,0.18), 0 1px 0 rgba(255,255,255,0.03) inset;
+}
+.card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,transparent,var(--blue),transparent);
+  transform:scaleX(0); transition:transform .4s;
+}
+.card::after {
+  content:''; position:absolute; inset:0; border-radius:14px;
+  background:linear-gradient(145deg, rgba(255,255,255,0.02), transparent); pointer-events:none;
+}
+.card:hover { transform:translateY(-8px); border-color:rgba(41,121,255,0.45); box-shadow:0 24px 70px rgba(41,121,255,0.14); }
+.card:hover::before { transform:scaleX(1); }
+.card-icon {
+  width:52px; height:52px; border-radius:10px;
+  background:rgba(41,121,255,0.1); display:grid; place-items:center;
+  margin-bottom:20px; font-size:22px; border:1px solid rgba(41,121,255,0.2);
+  box-shadow:0 4px 14px rgba(41,121,255,0.12), 0 1px 0 rgba(255,255,255,0.04) inset;
+}
+/* SVG icons for card-icon */
+.card-icon svg { width:24px; height:24px; }
+.card h3 { font-family:'Bebas Neue'; letter-spacing:3px; font-size:22px; margin-bottom:12px; color:var(--text); }
+.card p { font-size:15px; color:var(--muted); line-height:1.7; }
 
-/* ── ANIMATIONS ── */
-.fade-up{opacity:0;transform:translateY(30px);transition:opacity .7s,transform .7s;}
-.fade-up.visible{opacity:1;transform:translateY(0);}
+/* ══════════════════════════════════════════════
+   ABOUT
+══════════════════════════════════════════════ */
+#about { background:var(--bg); }
+.about-grid { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; max-width:1200px; margin:0 auto; }
+.about-eyebrow { font-size:11px; letter-spacing:6px; text-transform:uppercase; color:var(--blue); margin-bottom:16px; }
+.about-title { font-family:'Bebas Neue'; font-size:clamp(40px,5vw,72px); line-height:0.95; color:var(--text); margin-bottom:28px; }
+.about-title .accent { color:var(--blue); }
+.about-text { font-size:16px; color:var(--muted); line-height:1.8; margin-bottom:36px; }
+.about-text strong { color:var(--text); }
+.project-details { max-width:900px; margin:0 auto 32px; font-size:15px; color:var(--muted); line-height:1.8; }
+.project-features {
+  display:grid; grid-template-columns:repeat(2,minmax(220px,1fr)); gap:16px;
+  max-width:900px; margin:0 auto 32px; padding:0; list-style:none;
+}
+.project-features li { position:relative; padding-left:24px; color:var(--text-dim); line-height:1.8; }
+.project-features li::before { content:'•'; position:absolute; left:0; top:0; color:var(--blue); }
+.video-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:16px;
+  overflow:hidden; position:relative; aspect-ratio:16/10;
+  display:flex; flex-direction:column; justify-content:flex-end;
+  box-shadow:0 20px 70px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.04) inset;
+}
+.video-bg {
+  position:absolute; inset:0;
+  background:linear-gradient(135deg,#070d1a,#0c1a35,#040810);
+  display:flex; align-items:center; justify-content:center;
+}
+[data-theme="light"] .video-bg { background:linear-gradient(135deg,#dce8ff,#c8daff,#bdd0ff); }
+.wheelchair-svg { width:200px; opacity:0.22; filter:drop-shadow(0 0 40px var(--blue)); }
+.play-btn {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:68px; height:68px; border-radius:50%;
+  background:rgba(41,121,255,0.92);
+  display:grid; place-items:center; font-size:22px; cursor:pointer;
+  border:2px solid rgba(255,255,255,0.3);
+  box-shadow:0 0 50px var(--blue-glow), 0 8px 32px rgba(0,0,0,0.3);
+  transition:transform .2s,box-shadow .2s;
+}
+.play-btn:hover { transform:translate(-50%,-50%) scale(1.1); box-shadow:0 0 70px var(--blue-glow); }
+.video-footer { position:relative; padding:20px; background:rgba(7,13,26,0.92); }
+.video-footer h4 { font-family:'Bebas Neue'; letter-spacing:3px; font-size:20px; color:#fff; }
+.video-footer p { font-size:13px; color:var(--muted); margin-bottom:8px; }
+.watch-link { font-size:12px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); text-decoration:none; font-weight:700; }
 
-/* ── RESPONSIVE ── */
+/* ══════════════════════════════════════════════
+   STATS
+══════════════════════════════════════════════ */
+#stats {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+  border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:60px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.03);
+}
+.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); max-width:1000px; margin:0 auto; }
+.stat-item { display:flex; align-items:center; gap:20px; padding:20px 36px; border-right:1px solid var(--border); }
+.stat-item:last-child { border-right:none; }
+.stat-icon {
+  width:50px; height:50px;
+  background: linear-gradient(135deg, rgba(41,121,255,0.15), rgba(41,121,255,0.05));
+  border-radius:10px; display:grid; place-items:center; font-size:20px; flex-shrink:0;
+  border:1px solid rgba(41,121,255,0.2);
+  box-shadow:0 4px 14px rgba(41,121,255,0.1), 0 1px 0 rgba(255,255,255,0.04) inset;
+}
+.stat-num { font-family:'Bebas Neue'; font-size:44px; color:var(--text); line-height:1; }
+.stat-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); }
+
+/* ══════════════════════════════════════════════
+   ACHIEVEMENTS — with FB link
+══════════════════════════════════════════════ */
+#achievements { background:var(--bg2); border-bottom:1px solid var(--border); }
+.achieve-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:28px; max-width:1200px; margin:0 auto; }
+.achieve-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:36px;
+  display:flex; flex-direction:column; gap:0; transition:transform .3s,border-color .3s,box-shadow .3s;
+  position:relative; overflow:hidden;
+  box-shadow:0 4px 28px rgba(0,0,0,0.15), 0 1px 0 rgba(255,255,255,0.03) inset;
+}
+.achieve-card-top { display:flex; gap:24px; align-items:flex-start; }
+.achieve-card::before {
+  content:''; position:absolute; inset:0; border-radius:16px;
+  background:linear-gradient(145deg, rgba(255,255,255,0.025), transparent); pointer-events:none;
+}
+.achieve-card::after {
+  content:''; position:absolute; bottom:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,transparent,var(--blue),transparent);
+  transform:scaleX(0); transition:transform .4s;
+}
+.achieve-card:hover { transform:translateY(-8px); border-color:rgba(41,121,255,0.45); box-shadow:0 28px 80px rgba(41,121,255,0.15); }
+.achieve-card:hover::after { transform:scaleX(1); }
+.achieve-badge {
+  width:64px; height:64px; border-radius:14px;
+  background:linear-gradient(135deg,rgba(41,121,255,0.14),rgba(41,121,255,0.04));
+  border:1px solid rgba(41,121,255,0.25); display:grid; place-items:center; font-size:28px; flex-shrink:0;
+  box-shadow:0 4px 14px rgba(41,121,255,0.12), 0 1px 0 rgba(255,255,255,0.04) inset;
+}
+.achieve-body { flex:1; }
+.achieve-body h3 { font-family:'Bebas Neue'; letter-spacing:2px; font-size:20px; color:var(--text); margin-bottom:8px; }
+.achieve-body p { font-size:14px; color:var(--muted); line-height:1.6; }
+.achieve-meta { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:10px; }
+.achieve-year { font-family:'Space Mono'; font-size:11px; color:var(--blue); }
+.achieve-fb-link {
+  display:inline-flex; align-items:center; gap:6px; margin-top:14px;
+  padding:7px 14px; border-radius:8px;
+  background: rgba(24,119,242,0.1);
+  border: 1px solid rgba(24,119,242,0.3);
+  color: #4a9df8; text-decoration:none;
+  font-size:11px; letter-spacing:2px; text-transform:uppercase; font-weight:700;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.achieve-fb-link:hover {
+  background: rgba(24,119,242,0.22);
+  border-color: rgba(24,119,242,0.6);
+  color: #7dc0ff;
+}
+.achieve-fb-link svg { width:14px; height:14px; flex-shrink:0; }
+
+/* highlight badges */
+.badge-intl { background:rgba(0,229,255,0.08); color:var(--electric); border:1px solid rgba(0,229,255,0.2); padding:3px 10px; border-radius:12px; font-size:10px; letter-spacing:2px; text-transform:uppercase; font-weight:700; }
+.badge-natl { background:rgba(41,121,255,0.1); color:var(--blue-light); border:1px solid rgba(41,121,255,0.25); padding:3px 10px; border-radius:12px; font-size:10px; letter-spacing:2px; text-transform:uppercase; font-weight:700; }
+.badge-date { background:rgba(200,168,75,0.1); color:var(--accent-gold); border:1px solid rgba(200,168,75,0.25); padding:3px 10px; border-radius:12px; font-size:10px; letter-spacing:2px; text-transform:uppercase; font-weight:700; }
+
+/* APICTA feature */
+.apicta-feature {
+  max-width:1200px; margin:0 auto 36px;
+  background:linear-gradient(135deg,rgba(41,121,255,0.05),rgba(7,13,26,0.5));
+  padding:32px; border-radius:18px;
+  display:flex; gap:32px; align-items:center;
+  border:1px solid rgba(41,121,255,0.12);
+  box-shadow:0 30px 80px rgba(41,121,255,0.1), 0 1px 0 rgba(255,255,255,0.04) inset;
+  position:relative; overflow:hidden;
+}
+.apicta-feature::before {
+  content:''; position:absolute; top:-1px; left:20%; right:20%; height:2px;
+  background:linear-gradient(90deg,transparent,var(--blue),transparent);
+}
+.apicta-feature .apicta-img {
+  width:460px; height:auto; border-radius:14px;
+  border:1px solid rgba(41,121,255,0.15);
+  box-shadow:0 20px 60px rgba(41,121,255,0.15); flex-shrink:0;
+}
+.apicta-feature .apicta-info { flex:1; }
+.apicta-feature .apicta-info h3 { font-family:'Bebas Neue'; font-size:40px; margin:0 0 12px; color:var(--text); }
+.apicta-feature .apicta-info p { color:var(--muted); font-size:16px; line-height:1.6; margin-bottom:12px; }
+.apicta-feature .apicta-meta { display:flex; gap:18px; align-items:center; margin-top:12px; }
+.apicta-feature .apicta-meta .year {
+  background:rgba(41,121,255,0.1); color:var(--blue); padding:8px 14px; border-radius:8px;
+  font-family:'Space Mono'; font-size:13px; font-weight:700; border:1px solid rgba(41,121,255,0.2);
+}
+.apicta-feature .apicta-meta .type {
+  background:rgba(255,255,255,0.04); color:var(--text); padding:8px 14px; border-radius:8px;
+  font-size:13px; font-weight:700; border:1px solid rgba(255,255,255,0.06);
+}
+
+/* ══════════════════════════════════════════════
+   PROJECTS
+══════════════════════════════════════════════ */
+#projects { background:var(--bg); }
+.projects-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:28px; max-width:1200px; margin:0 auto; }
+.project-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:16px;
+  overflow:hidden; transition:transform .3s,box-shadow .3s;
+  display:flex; flex-direction:column;
+  box-shadow:0 4px 24px rgba(0,0,0,0.15), 0 1px 0 rgba(255,255,255,0.03) inset;
+}
+.project-card:hover { transform:translateY(-10px); box-shadow:0 28px 70px rgba(41,121,255,0.15); }
+.project-thumb {
+  height:190px; background:linear-gradient(135deg,var(--surface2),var(--surface));
+  display:flex; align-items:center; justify-content:center; font-size:56px;
+  position:relative; overflow:hidden;
+}
+.project-thumb::after { content:''; position:absolute; inset:0; background:linear-gradient(to bottom,transparent 50%,var(--surface)); }
+.project-body { padding:24px; flex-grow:1; display:flex; flex-direction:column; }
+.project-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; }
+.project-body h3 { font-family:'Bebas Neue'; letter-spacing:2px; font-size:22px; color:var(--text); margin-bottom:10px; }
+.project-body p { font-size:14px; color:var(--muted); line-height:1.7; margin-bottom:20px; flex-grow:1; }
+.project-link { font-size:12px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); text-decoration:none; font-weight:700; display:flex; align-items:center; gap:8px; margin-top:auto; }
+.project-link:hover { color:var(--blue-light); }
+
+/* ══════════════════════════════════════════════
+   ROADMAP — gorgeous redesign
+══════════════════════════════════════════════ */
+#roadmap { background:var(--bg2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.roadmap-track { max-width:960px; margin:0 auto; position:relative; }
+
+/* vertical line */
+.roadmap-track::before {
+  content:''; position:absolute; left:50%; top:0; bottom:0; width:2px;
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    var(--electric) 8%,
+    var(--blue) 35%,
+    var(--blue) 65%,
+    rgba(121,134,203,0.4) 85%,
+    transparent 100%
+  );
+  transform:translateX(-50%);
+  filter: drop-shadow(0 0 4px rgba(0,229,255,0.4));
+}
+
+.roadmap-item { display:flex; gap:56px; margin-bottom:64px; align-items:flex-start; position:relative; }
+.roadmap-item:nth-child(even) { flex-direction:row-reverse; }
+.roadmap-item:nth-child(even) .road-content { text-align:right; }
+.roadmap-item:nth-child(even) .road-status-row { justify-content:flex-end; }
+.roadmap-item:nth-child(even) .road-tags { justify-content:flex-end; }
+
+.road-content { flex:1; }
+
+/* card style */
+.road-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 32px;
+  position:relative;
+  transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+  overflow: hidden;
+}
+.road-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0,229,255,0.3);
+  box-shadow: 0 20px 60px rgba(0,229,255,0.1);
+}
+.road-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, transparent, var(--electric), transparent);
+  transform:scaleX(0); transition:transform 0.4s;
+}
+.road-card:hover::before { transform:scaleX(1); }
+
+/* STATUS glow top border */
+.road-card.status-completed { border-top-color: rgba(41,121,255,0.5); }
+.road-card.status-active { border-top-color: rgba(0,229,255,0.7); box-shadow: 0 0 30px rgba(0,229,255,0.1); }
+.road-card.status-vision { border-top-color: rgba(121,134,203,0.3); }
+
+.road-dot-wrap {
+  flex-shrink:0; display:flex; flex-direction:column; align-items:center;
+  padding-top: 30px; position:relative; z-index:1;
+}
+
+.road-dot {
+  width:22px; height:22px; border-radius:50%; flex-shrink:0;
+  position:relative; z-index:2;
+}
+.road-dot.done {
+  background: linear-gradient(135deg, var(--blue), var(--electric));
+  border: 3px solid var(--bg2);
+  box-shadow: 0 0 20px rgba(0,229,255,0.5), 0 0 0 4px rgba(0,229,255,0.1);
+}
+.road-dot.active {
+  background: #fff;
+  border: 3px solid var(--electric);
+  box-shadow: 0 0 0 0 rgba(0,229,255,0.5);
+  animation: dotPulse 2s ease-in-out infinite;
+}
+.road-dot.future {
+  background: var(--surface2);
+  border: 3px solid rgba(121,134,203,0.5);
+}
+@keyframes dotPulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,229,255,0.5)} 50%{box-shadow:0 0 0 14px rgba(0,229,255,0)} }
+
+/* word effects in roadmap */
+.road-year {
+  font-family:'Space Mono'; font-size:10px; color:var(--electric);
+  letter-spacing:3px; margin-bottom:10px; text-transform:uppercase;
+}
+.road-content h3 {
+  font-family:'Bebas Neue'; letter-spacing:3px; font-size:26px;
+  line-height:1; margin-bottom:12px;
+}
+/* letter-by-letter shimmer on h3 */
+.road-content h3 .letter {
+  display: inline-block;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+.road-card:hover h3 .letter {
+  color: var(--electric);
+  text-shadow: 0 0 12px rgba(0,229,255,0.6);
+}
+.road-content p { font-size:14px; color:var(--muted); line-height:1.7; margin-bottom:14px; }
+
+.road-status-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.road-status {
+  display:inline-block; padding:5px 16px; border-radius:20px;
+  font-size:10px; letter-spacing:2px; text-transform:uppercase; font-weight:700;
+}
+.status-done { background:rgba(41,121,255,0.12); color:var(--blue-light); border:1px solid rgba(41,121,255,0.3); }
+.status-active {
+  background:rgba(0,229,255,0.1); color:var(--electric); border:1px solid rgba(0,229,255,0.35);
+  box-shadow: 0 0 12px rgba(0,229,255,0.15);
+  animation: statusGlow 2s ease-in-out infinite;
+}
+@keyframes statusGlow { 0%,100%{box-shadow:0 0 8px rgba(0,229,255,0.1)} 50%{box-shadow:0 0 20px rgba(0,229,255,0.3)} }
+.status-future { background:rgba(121,134,203,0.08); color:var(--muted); border:1px solid rgba(121,134,203,0.2); }
+
+/* ══════════════════════════════════════════════
+   GALLERY
+══════════════════════════════════════════════ */
+#gallery { background:var(--bg); }
+.gallery-filter { display:flex; justify-content:center; gap:12px; margin-bottom:40px; flex-wrap:wrap; }
+.filter-btn {
+  padding:8px 22px; background:var(--surface); border:1px solid var(--border); border-radius:40px;
+  color:var(--muted); font-family:'Rajdhani'; font-size:12px; letter-spacing:2px; text-transform:uppercase;
+  cursor:pointer; transition:all .25s; box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+.filter-btn.active,.filter-btn:hover { background:var(--blue); color:#fff; border-color:var(--blue); box-shadow:0 4px 20px rgba(41,121,255,0.35); }
+.gallery-grid { display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:200px; gap:16px; max-width:1200px; margin:0 auto; }
+.gallery-item {
+  background:var(--surface); border:1px solid var(--border); border-radius:14px;
+  overflow:hidden; position:relative; cursor:pointer; transition:transform .3s,box-shadow .3s;
+  box-shadow:0 4px 20px rgba(0,0,0,0.15);
+}
+.gallery-item:hover { transform:scale(1.04); box-shadow:0 20px 60px rgba(41,121,255,0.22); z-index:2; }
+.gallery-item.wide { grid-column:span 2; }
+.gallery-item.tall { grid-row:span 2; }
+.gallery-inner {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:48px;
+  background:linear-gradient(135deg,var(--surface2),var(--surface));
+}
+.gallery-overlay {
+  position:absolute; inset:0;
+  background:linear-gradient(to top,rgba(4,8,16,0.92) 0%,transparent 60%);
+  opacity:0; transition:opacity .3s;
+  display:flex; flex-direction:column; justify-content:flex-end; padding:20px;
+}
+.gallery-item:hover .gallery-overlay { opacity:1; }
+.gallery-overlay h4 { color:#fff; font-size:14px; font-weight:700; letter-spacing:1px; }
+.gallery-overlay p { color:var(--blue-light); font-size:12px; letter-spacing:2px; text-transform:uppercase; }
+.lightbox {
+  position:fixed; inset:0; background:rgba(4,8,16,0.96); z-index:999;
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity .3s;
+}
+.lightbox.open { opacity:1; pointer-events:all; }
+.lightbox-inner {
+  background:var(--surface); border:1px solid var(--border-strong); border-radius:20px; padding:48px;
+  max-width:600px; width:90%; text-align:center; position:relative;
+  box-shadow:0 40px 120px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.05) inset;
+}
+.lightbox-close { position:absolute; top:18px; right:22px; font-size:22px; cursor:pointer; color:var(--muted); background:none; border:none; transition:color .2s; }
+.lightbox-close:hover { color:var(--text); }
+.lightbox-emoji { font-size:80px; margin-bottom:20px; display:block; }
+.lightbox-inner h3 { font-family:'Bebas Neue'; font-size:28px; letter-spacing:3px; color:var(--text); margin-bottom:10px; }
+.lightbox-inner p { color:var(--muted); font-size:15px; line-height:1.7; }
+
+/* ══════════════════════════════════════════════
+   TEAM
+══════════════════════════════════════════════ */
+#team { background:var(--bg2); border-top:1px solid var(--border); }
+.team-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:24px; max-width:1200px; margin:0 auto; }
+.member-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:14px;
+  padding:28px 20px; text-align:center; transition:transform .3s,border-color .3s,box-shadow .3s;
+  box-shadow:0 4px 24px rgba(0,0,0,0.14), 0 1px 0 rgba(255,255,255,0.03) inset;
+}
+.member-card:hover { transform:translateY(-8px); border-color:rgba(41,121,255,0.45); box-shadow:0 24px 60px rgba(41,121,255,0.14); }
+.member-avatar {
+  width:76px; height:76px; border-radius:50%; margin:0 auto 16px;
+  background:linear-gradient(135deg,var(--blue),#1a237e);
+  display:grid; place-items:center; font-size:28px;
+  border:2px solid rgba(41,121,255,0.4);
+  box-shadow:0 0 24px rgba(41,121,255,0.25), 0 4px 16px rgba(0,0,0,0.3);
+}
+.member-card h4 { font-weight:700; font-size:15px; margin-bottom:4px; color:var(--text); }
+.member-card .role { font-size:11px; color:var(--blue); letter-spacing:2px; text-transform:uppercase; }
+.member-socials { display:flex; justify-content:center; gap:10px; margin-top:14px; }
+.member-socials a {
+  width:32px; height:32px; border-radius:50%;
+  background:rgba(41,121,255,0.08); display:grid; place-items:center;
+  color:var(--blue); text-decoration:none; font-size:13px;
+  border:1px solid rgba(41,121,255,0.2); transition:background .2s,box-shadow .2s;
+}
+.member-socials a:hover { background:var(--blue); color:#fff; box-shadow:0 4px 14px rgba(41,121,255,0.4); }
+
+/* ══════════════════════════════════════════════
+   RECENT / NEWS
+══════════════════════════════════════════════ */
+#recent { background:var(--bg); border-top:1px solid var(--border); }
+.news-header { display:flex; justify-content:space-between; align-items:flex-end; max-width:1200px; margin:0 auto 40px; }
+.news-header-left .section-eyebrow { text-align:left; }
+.news-header-left .section-title { text-align:left; margin-bottom:0; }
+.view-all {
+  font-size:12px; letter-spacing:3px; text-transform:uppercase; color:var(--blue);
+  text-decoration:none; font-weight:700; border:1px solid var(--blue); padding:10px 20px;
+  border-radius:4px; transition:background .2s,box-shadow .2s;
+}
+.view-all:hover { background:rgba(41,121,255,0.1); box-shadow:0 4px 20px rgba(41,121,255,0.2); }
+.news-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; max-width:1200px; margin:0 auto; }
+.news-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:14px;
+  overflow:hidden; transition:transform .3s,border-color .3s,box-shadow .3s;
+  box-shadow:0 4px 20px rgba(0,0,0,0.12);
+}
+.news-card:hover { transform:translateY(-6px); border-color:rgba(41,121,255,0.35); box-shadow:0 20px 60px rgba(41,121,255,0.12); }
+.news-thumb { height:130px; background:linear-gradient(135deg,var(--surface2),rgba(41,121,255,0.1)); display:flex; align-items:center; justify-content:center; font-size:38px; }
+.news-body { padding:18px; }
+.news-date { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:8px; font-family:'Space Mono'; }
+.news-body h4 { font-size:15px; font-weight:700; color:var(--text); line-height:1.4; margin-bottom:12px; }
+.news-arrow { font-size:18px; color:var(--blue); text-decoration:none; }
+
+/* ══════════════════════════════════════════════
+   CONTACT
+══════════════════════════════════════════════ */
+#contact { background:var(--bg2); border-top:1px solid var(--border); }
+.contact-grid { display:grid; grid-template-columns:1fr 1.6fr; gap:80px; max-width:1100px; margin:0 auto; }
+.contact-info h3 { font-family:'Bebas Neue'; font-size:42px; letter-spacing:4px; color:var(--text); margin-bottom:20px; }
+.contact-info p { color:var(--muted); font-size:16px; line-height:1.8; margin-bottom:36px; }
+.contact-detail { display:flex; align-items:flex-start; gap:14px; margin-bottom:24px; }
+.contact-icon {
+  width:46px; height:46px;
+  background:linear-gradient(135deg,rgba(41,121,255,0.14),rgba(41,121,255,0.04));
+  border:1px solid rgba(41,121,255,0.2); border-radius:10px;
+  display:grid; place-items:center; font-size:18px; flex-shrink:0;
+  box-shadow:0 4px 14px rgba(41,121,255,0.1), 0 1px 0 rgba(255,255,255,0.04) inset;
+}
+.contact-detail-text strong { display:block; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:4px; }
+.contact-detail-text span { color:var(--muted); font-size:14px; }
+.contact-form { display:grid; gap:16px; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-group label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:8px; }
+.form-group input,.form-group textarea,.form-group select {
+  width:100%; padding:14px 18px;
+  background:var(--surface); border:1px solid var(--border); border-radius:8px;
+  color:var(--text); font-family:'Rajdhani'; font-size:15px; outline:none;
+  transition:border-color .2s,box-shadow .2s; resize:none;
+}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus {
+  border-color:var(--blue); box-shadow:0 0 0 3px rgba(41,121,255,0.1);
+}
+.form-group input::placeholder,.form-group textarea::placeholder { color:rgba(121,134,203,0.35); }
+.form-group select option { background:var(--surface2); }
+
+/* ══════════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════════ */
+footer { background:var(--bg); border-top:1px solid var(--border); padding:70px 60px 30px; }
+.footer-main { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:60px; max-width:1200px; margin:0 auto 60px; }
+.footer-brand .footer-logo { font-family:'Bebas Neue'; font-size:32px; letter-spacing:6px; color:var(--text); margin-bottom:6px; }
+.footer-brand .footer-logo span { color:var(--blue); }
+.footer-brand .footer-sub { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--muted); margin-bottom:20px; }
+.footer-brand p { font-size:14px; color:var(--muted); line-height:1.7; max-width:280px; }
+.footer-col h5 { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--blue); margin-bottom:20px; font-weight:700; }
+.footer-col a { display:block; color:var(--muted); text-decoration:none; font-size:14px; margin-bottom:12px; transition:color .2s; }
+.footer-col a:hover { color:var(--text); }
+.social-links { display:flex; gap:12px; margin-top:20px; }
+.social-link {
+  width:42px; height:42px; border-radius:10px;
+  background:var(--surface); border:1px solid var(--border);
+  display:grid; place-items:center; color:var(--muted); text-decoration:none; font-size:16px;
+  transition:all .25s; box-shadow:0 2px 10px rgba(0,0,0,0.12), 0 1px 0 rgba(255,255,255,0.03) inset;
+}
+.social-link:hover { background:var(--blue); color:#fff; border-color:var(--blue); box-shadow:0 0 24px var(--blue-glow); transform:translateY(-2px); }
+.footer-divider { max-width:1200px; margin:0 auto; height:1px; background:var(--border); }
+.footer-bottom { max-width:1200px; margin:30px auto 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+.footer-copy { font-family:'Space Mono'; font-size:11px; color:rgba(121,134,203,0.4); }
+.footer-dev { font-family:'Space Mono'; font-size:11px; color:rgba(121,134,203,0.5); }
+.footer-dev span { color:var(--blue); }
+
+/* ══════════════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════════════ */
+.fade-up { opacity:0; transform:translateY(30px); transition:opacity .7s,transform .7s; }
+.fade-up.visible { opacity:1; transform:translateY(0); }
+
+/* section decorative line */
+.section-line {
+  width:60px; height:2px; background:linear-gradient(90deg, var(--electric), transparent);
+  margin:0 auto 40px; border-radius:2px; box-shadow:0 0 10px var(--electric);
+}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════ */
 @media(max-width:1100px){
-  nav{padding:16px 30px;}
-  section{padding:80px 30px;}
-  #hero{padding:120px 30px 80px;}
-  .cards-grid{grid-template-columns:repeat(2,1fr);}
-  .about-grid{grid-template-columns:1fr;gap:50px;}
-  .moon-wrap{width:340px;height:340px;right:2%;}
-  .team-grid{grid-template-columns:repeat(3,1fr);}
-  .news-grid{grid-template-columns:repeat(2,1fr);}
-  .stats-grid{grid-template-columns:repeat(2,1fr);}
-  .stat-item{border-right:none;border-bottom:1px solid var(--border);}
-  .projects-grid{grid-template-columns:1fr 1fr;}
-  .achieve-grid{grid-template-columns:1fr 1fr;}
-  .footer-main{grid-template-columns:1fr 1fr;gap:40px;}
-  .contact-grid{grid-template-columns:1fr;gap:50px;}
-  .roadmap-track::before{left:20px;}
-  .roadmap-item,.roadmap-item:nth-child(even){flex-direction:row;gap:30px;}
-  .roadmap-item:nth-child(even) .road-content{text-align:left;}
-  .road-dot{margin-top:6px;}
-  .gallery-grid{grid-template-columns:repeat(2,1fr);}
-  .gallery-item.wide{grid-column:span 1;}
+  nav { padding:14px 30px; }
+  section { padding:80px 30px; }
+  #hero { padding:120px 30px 80px; }
+  .cards-grid { grid-template-columns:repeat(2,1fr); }
+  .about-grid { grid-template-columns:1fr; gap:50px; }
+  .hero-abstract { width:100%; position:relative; height:320px; right:auto; display:none; }
+  .team-grid { grid-template-columns:repeat(3,1fr); }
+  .news-grid { grid-template-columns:repeat(2,1fr); }
+  .stats-grid { grid-template-columns:repeat(2,1fr); }
+  .stat-item { border-right:none; border-bottom:1px solid var(--border); }
+  .projects-grid { grid-template-columns:1fr 1fr; }
+  .achieve-grid { grid-template-columns:1fr 1fr; }
+  .footer-main { grid-template-columns:1fr 1fr; gap:40px; }
+  .contact-grid { grid-template-columns:1fr; gap:50px; }
+  .roadmap-track::before { left:20px; }
+  .roadmap-item,.roadmap-item:nth-child(even) { flex-direction:row; gap:30px; }
+  .roadmap-item:nth-child(even) .road-content { text-align:left; }
+  .roadmap-item:nth-child(even) .road-status-row { justify-content:flex-start; }
+  .road-dot-wrap { padding-top:26px; }
+  .gallery-grid { grid-template-columns:repeat(2,1fr); }
+  .gallery-item.wide { grid-column:span 1; }
+  .apicta-feature { flex-direction:column; align-items:flex-start; }
+  .apicta-feature .apicta-img { width:100%; max-width:520px; }
+  .page-content { padding:40px 30px; }
+  .page-back { padding:16px 30px; }
+  .wc-features { display:none; }
 }
 @media(max-width:768px){
-  nav{padding:14px 20px;}
-  .nav-links{display:none;}
-  .hamburger{display:flex;}
-  section{padding:60px 20px;}
-  #hero{padding:110px 20px 60px;}
-  .moon-wrap{width:220px;height:220px;opacity:0.5;right:0;top:20%;}
-  .hero-title{font-size:clamp(56px,15vw,80px);}
-  .cards-grid{grid-template-columns:1fr;}
-  .stats-grid{grid-template-columns:1fr 1fr;}
-  .team-grid{grid-template-columns:repeat(2,1fr);}
-  .news-grid{grid-template-columns:1fr;}
-  .projects-grid{grid-template-columns:1fr;}
-  .achieve-grid{grid-template-columns:1fr;}
-  .form-row{grid-template-columns:1fr;}
-  .news-header{flex-direction:column;gap:20px;align-items:flex-start;}
-  #stats{padding:50px 20px;}
-  .footer-main{grid-template-columns:1fr;}
-  .footer-bottom{flex-direction:column;text-align:center;}
-  .gallery-grid{grid-template-columns:1fr 1fr;grid-auto-rows:160px;}
-  .gallery-item.tall{grid-row:span 1;}
-  .scroll-indicator{display:none;}
+  nav { padding:12px 20px; }
+  .nav-links { display:none; }
+  .hamburger { display:flex; }
+  section { padding:60px 20px; }
+  #hero { padding:110px 20px 100px; }
+  .hero-title { font-size:clamp(56px,15vw,80px); }
+  .cards-grid { grid-template-columns:1fr; }
+  .stats-grid { grid-template-columns:1fr 1fr; }
+  .team-grid { grid-template-columns:repeat(2,1fr); }
+  .news-grid { grid-template-columns:1fr; }
+  .projects-grid { grid-template-columns:1fr; }
+  .achieve-grid { grid-template-columns:1fr; }
+  .form-row { grid-template-columns:1fr; }
+  .news-header { flex-direction:column; gap:20px; align-items:flex-start; }
+  #stats { padding:50px 20px; }
+  .footer-main { grid-template-columns:1fr; }
+  .footer-bottom { flex-direction:column; text-align:center; }
+  .gallery-grid { grid-template-columns:1fr 1fr; grid-auto-rows:160px; }
+  .gallery-item.tall { grid-row:span 1; }
+  .scroll-indicator { display:none; }
+  .hero-quick-nav { left:20px; right:20px; bottom:20px; }
+  .hero-tech-badge { display:none; }
+  .hero-abstract { display:block; position:absolute; width:100%; height:100%; right:0; top:0; opacity:0.4; }
+  .page-content { padding:30px 20px; }
+  .page-back { padding:14px 20px; }
+  .page-back-title { font-size:15px; }
 }
+
+/* ══════════════════════════════════════════════
+   LIGHT MODE
+══════════════════════════════════════════════ */
+[data-theme="light"] .hero-title .accent { color: var(--blue); }
+[data-theme="light"] nav { background: rgba(240,244,255,0.9); }
+[data-theme="light"] .mobile-menu { background: rgba(240,244,255,0.97); }
+[data-theme="light"] .page-overlay { background: var(--bg); }
+[data-theme="light"] .video-footer { background: rgba(30,64,128,0.92); }
+[data-theme="light"] .stat-num { color: var(--blue-deep); }
+[data-theme="light"] #cursor-ring { border-color: rgba(41,121,255,0.5); }
+[data-theme="light"] #cursor-dot { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
+
+/* ══════════════════════════════════════════════
+   PAGE OVERLAY SECTION STYLES
+══════════════════════════════════════════════ */
+.page-section-wrap { width:100%; max-width:1200px; margin:0 auto; }
+.page-section-wrap section { padding: 0 0 80px; border: none; background: transparent; }
+
+/* ══════════════════════════════════════════════
+   PAGE REVEAL ANIMATION — name fades up on entry
+══════════════════════════════════════════════ */
+.page-reveal-anim {
+  position: fixed; inset: 0; z-index: 9999;
+  display: none; align-items: center; justify-content: center;
+  background: var(--bg);
+  pointer-events: none;
+}
+.pra-text {
+  font-family: 'Bebas Neue';
+  font-size: clamp(48px, 10vw, 100px);
+  letter-spacing: 10px;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, var(--blue), var(--electric));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  opacity: 0;
+  transform: translateY(0px);
+  transition: opacity 0.4s ease, transform 0.7s cubic-bezier(0.23,1,0.32,1);
+  text-align: center;
+}
+.pra-show .pra-text { opacity: 1; transform: translateY(0); }
+.pra-fadeup .pra-text { opacity: 0; transform: translateY(-80px); }
+.pra-done { display: none !important; }
+
+/* ══════════════════════════════════════════════
+   HERO REDESIGN — remove wheelchair, add animated particles + abstract visual
+══════════════════════════════════════════════ */
+.hero-abstract {
+  position: absolute; right: 0; top: 0; bottom: 0;
+  width: 55%; pointer-events: none; overflow: hidden;
+}
+#heroAbstractCanvas {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+}
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+.hero-orb-1 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(41,121,255,0.18) 0%, transparent 70%);
+  top: 10%; right: 5%;
+  animation: orbFloat1 8s ease-in-out infinite;
+}
+.hero-orb-2 {
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, rgba(0,229,255,0.12) 0%, transparent 70%);
+  bottom: 15%; right: 25%;
+  animation: orbFloat2 10s ease-in-out infinite;
+}
+.hero-orb-3 {
+  width: 250px; height: 250px;
+  background: radial-gradient(circle, rgba(124,77,255,0.1) 0%, transparent 70%);
+  top: 40%; right: 10%;
+  animation: orbFloat3 12s ease-in-out infinite;
+}
+[data-theme="light"] .hero-orb-1 { background: radial-gradient(circle, rgba(41,121,255,0.12) 0%, transparent 70%); }
+[data-theme="light"] .hero-orb-2 { background: radial-gradient(circle, rgba(0,150,220,0.1) 0%, transparent 70%); }
+
+@keyframes orbFloat1 {
+  0%,100%{ transform: translate(0,0) scale(1); }
+  33%{ transform: translate(-30px,20px) scale(1.05); }
+  66%{ transform: translate(20px,-15px) scale(0.97); }
+}
+@keyframes orbFloat2 {
+  0%,100%{ transform: translate(0,0) scale(1); }
+  40%{ transform: translate(25px,-30px) scale(1.08); }
+  75%{ transform: translate(-20px,25px) scale(0.95); }
+}
+@keyframes orbFloat3 {
+  0%,100%{ transform: translate(0,0); }
+  50%{ transform: translate(-15px,20px) scale(1.1); }
+}
+
+/* HERO grid lines decoration */
+.hero-grid-deco {
+  position: absolute; inset: 0; opacity: 0.04;
+  background-image:
+    linear-gradient(rgba(41,121,255,1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(41,121,255,1) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: linear-gradient(135deg, transparent 30%, black 60%, transparent 90%);
+}
+[data-theme="light"] .hero-grid-deco { opacity: 0.06; }
+
+/* HERO floating tech badge */
+.hero-tech-badge {
+  position: absolute;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 14px 20px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2), 0 1px 0 rgba(255,255,255,0.06) inset;
+  display: flex; align-items: center; gap: 12px;
+  animation: badgeFloat 6s ease-in-out infinite;
+}
+[data-theme="light"] .hero-tech-badge { background: rgba(255,255,255,0.85); }
+.hero-tech-badge-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: rgba(41,121,255,0.15);
+  border: 1px solid rgba(41,121,255,0.3);
+  display: grid; place-items: center;
+  font-size: 16px;
+}
+.hero-tech-badge-text strong {
+  display: block; font-size: 13px; font-weight: 700;
+  color: var(--text); letter-spacing: 0.5px;
+}
+.hero-tech-badge-text span {
+  font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
+}
+.badge-pos-1 { top: 18%; right: 8%; animation-delay: 0s; }
+.badge-pos-2 { top: 42%; right: 4%; animation-delay: 1.5s; }
+.badge-pos-3 { bottom: 22%; right: 12%; animation-delay: 3s; }
+.badge-pos-4 { top: 65%; right: 30%; animation-delay: 0.8s; }
+
+@keyframes badgeFloat {
+  0%,100%{ transform: translateY(0px); }
+  50%{ transform: translateY(-8px); }
+}
+
+/* hero animated circuit lines */
+.hero-circuit {
+  position: absolute; inset: 0; overflow: hidden; opacity: 0.18;
+  pointer-events: none;
+}
+[data-theme="light"] .hero-circuit { opacity: 0.1; }
+
+/* ══════════════════════════════════════════════
+   PROJECTS PAGE — wheelchair feature layout (6-left, img-center, 6-right)
+══════════════════════════════════════════════ */
+.care-wheelchair-layout {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0 32px;
+  align-items: center;
+  max-width: 1100px;
+  margin: 0 auto 60px;
+  position: relative;
+}
+.care-wc-left, .care-wc-right {
+  display: flex; flex-direction: column; gap: 14px;
+}
+.care-wc-right { align-items: flex-end; text-align: right; }
+.care-feat-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  opacity: 0; transform: translateX(-30px);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.23,1,0.32,1), border-color 0.3s, box-shadow 0.3s;
+}
+.care-wc-right .care-feat-item {
+  flex-direction: row-reverse;
+  transform: translateX(30px);
+}
+.care-feat-item.visible {
+  opacity: 1; transform: translateX(0);
+}
+.care-feat-item:hover {
+  border-color: rgba(41,121,255,0.45);
+  box-shadow: 0 8px 32px rgba(41,121,255,0.12);
+  transform: translateY(-2px) !important;
+}
+.care-feat-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--electric); flex-shrink: 0;
+  box-shadow: 0 0 10px var(--electric);
+}
+.care-feat-name {
+  font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--text-dim); font-weight: 600; white-space: nowrap;
+}
+.care-wc-center {
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  position: relative;
+}
+.care-wc-placeholder {
+  width: 200px; height: 220px;
+  background: var(--surface);
+  border: 2px dashed rgba(41,121,255,0.3);
+  border-radius: 16px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px;
+  color: var(--muted);
+}
+.care-wc-placeholder svg { opacity: 0.5; }
+.care-wc-img {
+  max-width: 200px; max-height: 240px;
+  border-radius: 16px;
+  border: 1px solid rgba(41,121,255,0.25);
+  box-shadow: 0 0 60px rgba(41,121,255,0.2);
+  display: block;
+}
+.care-wc-glow {
+  position: absolute; inset: -20px;
+  background: radial-gradient(ellipse at center, rgba(41,121,255,0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+@media(max-width:900px){
+  .care-wheelchair-layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .care-wc-right { align-items: flex-start; text-align: left; }
+  .care-wc-right .care-feat-item { flex-direction: row; }
+  .care-wc-center { order: -1; }
+}
+
+/* ══════════════════════════════════════════════
+   LIGHT MODE HERO tweaks
+══════════════════════════════════════════════ */
+/* light hero-bg handled above */
+
+/* ══════════════════════════════════════════════
+   ADDITIONAL LIGHT MODE POLISH
+══════════════════════════════════════════════ */
+[data-theme="light"] .hero-tech-badge {
+  background: rgba(255,255,255,0.92);
+  border-color: rgba(41,121,255,0.2);
+  box-shadow: 0 8px 32px rgba(41,121,255,0.1), 0 1px 0 rgba(255,255,255,0.9) inset;
+}
+[data-theme="light"] .hero-tech-badge-text strong { color: #0d1b3e; }
+[data-theme="light"] .hero-tech-badge-text span { color: #5a6a8a; }
+[data-theme="light"] .care-feat-item {
+  background: #fff;
+  border-color: rgba(41,121,255,0.12);
+  box-shadow: 0 2px 12px rgba(41,121,255,0.07);
+}
+[data-theme="light"] .care-wc-placeholder {
+  background: #f5f7ff;
+  border-color: rgba(41,121,255,0.2);
+}
+[data-theme="light"] .page-reveal-anim { background: var(--bg); }
+[data-theme="light"] .welcome-box {
+  background: linear-gradient(135deg, #ffffff, #f5f8ff);
+  box-shadow: 0 40px 100px rgba(41,121,255,0.12), 0 0 0 1px rgba(41,121,255,0.08);
+}
+
+/* page-back duplicate removed */
+
+/* ══════════════════════════════════════════════
+   LIGHT MODE — comprehensive text visibility fix
+══════════════════════════════════════════════ */
+[data-theme="light"] .hero-title { color: #0a1628; }
+[data-theme="light"] .hero-eyebrow { color: var(--blue); }
+[data-theme="light"] .hero-desc { color: #2d4a6e; }
+[data-theme="light"] .hero-desc strong { color: #0a1628; }
+[data-theme="light"] .section-eyebrow { color: var(--blue); }
+[data-theme="light"] .section-title { color: #0a1628; }
+[data-theme="light"] .card { background: #ffffff; border-color: rgba(41,100,200,0.12); box-shadow: 0 4px 20px rgba(41,100,200,0.08); }
+[data-theme="light"] .card h3 { color: #0a1628; }
+[data-theme="light"] .card p { color: #2d4a6e; }
+[data-theme="light"] .card-icon { background: rgba(41,100,200,0.08); border-color: rgba(41,100,200,0.15); }
+[data-theme="light"] .about-title { color: #0a1628; }
+[data-theme="light"] .about-text { color: #2d4a6e; }
+[data-theme="light"] .about-text strong { color: #0a1628; }
+[data-theme="light"] .about-eyebrow { color: var(--blue); }
+[data-theme="light"] .stat-num { color: #0a1628; }
+[data-theme="light"] .stat-label { color: #3d5a80; }
+[data-theme="light"] .stat-item { border-right-color: rgba(41,100,200,0.12); }
+[data-theme="light"] #stats { background: linear-gradient(135deg, #f0f4ff, #e8eeff); border-color: rgba(41,100,200,0.1); }
+[data-theme="light"] .achieve-card { background: #ffffff; }
+[data-theme="light"] .achieve-body h3 { color: #0a1628; }
+[data-theme="light"] .achieve-body p { color: #2d4a6e; }
+[data-theme="light"] .news-card { background: #ffffff; border-color: rgba(41,100,200,0.1); }
+[data-theme="light"] .news-body h4 { color: #0a1628; }
+[data-theme="light"] .news-date { color: #3d5a80; }
+[data-theme="light"] .news-thumb { background: linear-gradient(135deg, #e8eeff, rgba(41,100,200,0.08)); }
+[data-theme="light"] .project-card { background: #ffffff; }
+[data-theme="light"] .project-body h3 { color: #0a1628; }
+[data-theme="light"] .project-body p { color: #2d4a6e; }
+[data-theme="light"] .project-thumb { background: linear-gradient(135deg, #e8eeff, #f0f4ff); }
+[data-theme="light"] .member-card { background: #ffffff; }
+[data-theme="light"] .member-card h4 { color: #0a1628; }
+[data-theme="light"] .member-card .role { color: var(--blue); }
+[data-theme="light"] .road-card { background: #ffffff; }
+[data-theme="light"] .road-content h3 { color: #0a1628; }
+[data-theme="light"] .road-content p { color: #2d4a6e; }
+[data-theme="light"] .road-year { color: var(--blue); }
+[data-theme="light"] .footer-logo { color: #0a1628; }
+[data-theme="light"] footer { background: #f0f4ff; }
+[data-theme="light"] .footer-col a { color: #3d5a80; }
+[data-theme="light"] .footer-col h5 { color: var(--blue); }
+[data-theme="light"] .footer-copy, [data-theme="light"] .footer-dev { color: #3d5a80; }
+[data-theme="light"] .footer-brand p { color: #3d5a80; }
+[data-theme="light"] .social-link { background: #ffffff; color: #3d5a80; border-color: rgba(41,100,200,0.15); }
+[data-theme="light"] .contact-info h3 { color: #0a1628; }
+[data-theme="light"] .contact-info p { color: #2d4a6e; }
+[data-theme="light"] .contact-detail-text span { color: #3d5a80; }
+[data-theme="light"] .form-group label { color: #3d5a80; }
+[data-theme="light"] .form-group input,
+[data-theme="light"] .form-group textarea,
+[data-theme="light"] .form-group select { background: #ffffff; color: #0a1628; border-color: rgba(41,100,200,0.2); }
+[data-theme="light"] .form-group input::placeholder,
+[data-theme="light"] .form-group textarea::placeholder { color: rgba(61,90,128,0.4); }
+[data-theme="light"] .welcome-logo { background: linear-gradient(135deg, #1a5fd4, #0077cc); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+[data-theme="light"] .welcome-sub { color: #3d5a80; }
+[data-theme="light"] .welcome-msg { color: #0a1628; }
+[data-theme="light"] .hero-nav-chip { color: #2d4a6e; background: rgba(255,255,255,0.9); border-color: rgba(41,100,200,0.2); }
+[data-theme="light"] .hero-nav-chip:hover { color: #fff; }
+[data-theme="light"] .page-back { background: rgba(255,255,255,0.95); border-bottom-color: rgba(41,100,200,0.12); }
+[data-theme="light"] .page-back-title { color: #0a1628; }
+[data-theme="light"] .page-back-btn { color: var(--blue); }
+[data-theme="light"] .gallery-item { background: #ffffff; }
+[data-theme="light"] .filter-btn { background: #ffffff; color: #3d5a80; border-color: rgba(41,100,200,0.15); }
+[data-theme="light"] .apicta-feature { background: linear-gradient(135deg, rgba(41,100,200,0.04), #ffffff); }
+[data-theme="light"] .page-overlay { background: #ffffff; }
+[data-theme="light"] .lightbox-inner { background: #ffffff; }
+[data-theme="light"] .lightbox-inner h3 { color: #0a1628; }
+[data-theme="light"] .lightbox-inner p { color: #2d4a6e; }
+[data-theme="light"] .nav-links a { color: #3d5a80; }
+[data-theme="light"] .nav-links a:hover, [data-theme="light"] .nav-links a.active { color: var(--blue); }
+[data-theme="light"] .scroll-indicator { color: #3d5a80; }
+[data-theme="light"] .scroll-indicator::after { background: var(--blue); }
+[data-theme="light"] .section-line { background: linear-gradient(90deg, var(--blue), transparent); box-shadow: 0 0 8px rgba(41,100,200,0.3); }
+[data-theme="light"] .btn-secondary { color: #0a1628; border-color: rgba(41,100,200,0.3); }
+[data-theme="light"] .care-feat-item { background: #ffffff; }
+[data-theme="light"] .care-feat-name { color: #1e3a5f; }
+[data-theme="light"] #recent-home { background: #f0f4ff; }
+[data-theme="light"] .road-card.status-active { box-shadow: 0 0 30px rgba(0,120,200,0.12); }
+[data-theme="light"] .apicta-feature .apicta-info h3 { color: #0a1628; }
+[data-theme="light"] .apicta-feature .apicta-info p { color: #2d4a6e; }
+[data-theme="light"] .road-status.status-done { background: rgba(26,95,212,0.08); color: #1a5fd4; border-color: rgba(26,95,212,0.25); }
+[data-theme="light"] .road-status.status-active { background: rgba(0,119,204,0.08); color: #0077cc; border-color: rgba(0,119,204,0.3); }
+[data-theme="light"] .project-details { color: #2d4a6e; }
+[data-theme="light"] .achieve-year { color: var(--blue); }
+[data-theme="light"] #what { background: #f0f4ff; }
+[data-theme="light"] #about { background: #ffffff; }
+[data-theme="light"] #recent-home { background: #f4f7fe; }
+[data-theme="light"] .video-bg { background: linear-gradient(135deg, #dce8ff, #c8daff, #bdd0ff); }
+[data-theme="light"] .video-footer { background: rgba(10,22,60,0.88); }
+[data-theme="light"] .page-reveal-anim { background: #ffffff; }
+
 </style>
 </head>
 <body>
 
+<!-- ═══ WELCOME POPUP ═══ -->
+<div id="welcome-popup">
+  <div class="welcome-box">
+    <div class="welcome-deco"></div>
+    <div class="welcome-logo">Team C.A.R.E</div>
+    <div class="welcome-sub">Welcome</div>
+    <button class="welcome-close" onclick="closeWelcome()">Enter Website →</button>
+  </div>
+</div>
+
+<!-- ═══ CUSTOM CURSOR ═══ -->
+<div id="cursor-ring"></div>
+<div id="cursor-dot"></div>
+
+<!-- ═══ MOBILE MENU ═══ -->
 <div class="mobile-menu" id="mobileMenu">
   <a href="#hero" onclick="closeMobile()">Home</a>
   <a href="#about" onclick="closeMobile()">About</a>
-  <a href="#achievements" onclick="closeMobile()">Achievements</a>
-  <a href="#projects" onclick="closeMobile()">Projects</a>
-  <a href="#roadmap" onclick="closeMobile()">Roadmap</a>
-  <a href="#gallery" onclick="closeMobile()">Gallery</a>
-  <a href="#team" onclick="closeMobile()">Team</a>
-  <a href="#recent" onclick="closeMobile()">Recent</a>
-  <a href="#contact" onclick="closeMobile()">Contact</a>
+  <a onclick="openPage('achievements');closeMobile()">Achievements</a>
+  <a onclick="openPage('projects');closeMobile()">Projects</a>
+  <a onclick="openPage('roadmap');closeMobile()">Roadmap</a>
+  <a onclick="openPage('gallery');closeMobile()">Gallery</a>
+  <a onclick="openPage('team');closeMobile()">Team</a>
+  <a onclick="openPage('recent');closeMobile()">Recent</a>
+  <a onclick="openPage('contact');closeMobile()">Contact</a>
 </div>
 
-<nav id="navbar">
-  <a href="#hero" class="nav-logo">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+<!-- ═══ NAV ═══ -->
+<nav>
+  <a class="nav-logo" href="#hero">
+    <svg viewBox="0 0 880 290" xmlns="http://www.w3.org/2000/svg">
       <g>
-        <path style="fill:#ffffff;" d="M 205.97656 169.30859 L 205.97656 215.17969 C 205.97656 215.17969 191.02734 207.23438 181.33203 194.01562 L 181.33203 213.41406 L 157.0625 213.41406 L 157.0625 188.72266 L 93.53125 188.72266 L 68.835938 169.30859 L 205.97656 169.30859 z M 205.97656 169.30859 "/>
-        <path style="fill:#ffffff;" d="M 314.19531 169.30859 L 314.19531 181.65625 L 232.0625 181.65625 L 243.53594 169.30859 L 314.19531 169.30859 z M 314.19531 169.30859 "/>
-        <path style="fill:#ffffff;" d="M 314.19531 185.1875 L 314.19531 197.53516 L 246.18359 197.53516 L 246.18359 185.1875 L 314.19531 185.1875 z M 314.19531 185.1875 "/>
-        <path style="fill:#ffffff;" d="M 314.19531 201.06641 L 314.19531 213.41406 L 243.53594 213.41406 L 232.0625 201.06641 L 314.19531 201.06641 z M 314.19531 201.06641 "/>
-        <path style="fill:#ffffff;" d="M 364.71875 169.30859 L 388.98828 213.41406 L 368.6875 213.41406 L 361.63281 199.73828 L 333.38281 199.73828 L 326.32422 213.41406 L 306.02734 213.41406 L 330.29297 169.30859 L 364.71875 169.30859 z M 347.50781 172.83984 L 340.44922 186.51562 L 354.56641 186.51562 L 347.50781 172.83984 z M 347.50781 172.83984 "/>
-        <path style="fill:#ffffff;" d="M 390.3125 213.41406 L 390.3125 169.30859 L 413.25 169.30859 L 423.83984 191.37109 L 434.42578 169.30859 L 457.36719 169.30859 L 457.36719 213.41406 L 439.71875 213.41406 L 439.71875 188.72266 L 423.83984 213.41406 L 407.96094 188.72266 L 407.96094 213.41406 L 390.3125 213.41406 z M 390.3125 213.41406 "/>
-        <path style="fill:#ffffff;" d="M 535.43359 169.30859 L 535.43359 186.95312 L 507.1875 186.95312 L 507.1875 195.77734 L 535.43359 195.77734 L 535.43359 213.41406 L 485.12891 213.41406 L 473.65625 201.06641 L 473.65625 181.65625 L 485.12891 169.30859 L 535.43359 169.30859 z M 535.43359 169.30859 "/>
-        <path style="fill:#ffffff;" d="M 543.82031 213.41406 L 543.82031 199.28906 L 557.9375 199.28906 L 557.9375 213.41406 L 543.82031 213.41406 z M 543.82031 213.41406 "/>
-        <path style="fill:#ffffff;" d="M 602.49609 169.30859 L 626.76562 213.41406 L 606.46484 213.41406 L 599.41016 199.73828 L 571.16016 199.73828 L 564.10156 213.41406 L 543.80469 213.41406 L 568.07031 169.30859 L 602.49609 169.30859 z M 585.28516 172.83984 L 578.22656 186.51562 L 592.34375 186.51562 L 585.28516 172.83984 z M 585.28516 172.83984 "/>
-        <path style="fill:#ffffff;" d="M 633.38281 213.41406 L 633.38281 199.28906 L 647.5 199.28906 L 647.5 213.41406 L 633.38281 213.41406 z M 633.38281 213.41406 "/>
-        <path style="fill:#ffffff;" d="M 686.32812 169.30859 L 696.03516 178.125 L 696.03516 193.13281 L 686.32812 201.06641 L 678.38672 201.06641 L 678.38672 213.41406 L 660.73828 213.41406 L 660.73828 169.30859 L 686.32812 169.30859 z M 678.38672 178.125 L 678.38672 192.24219 L 680.14844 192.24219 L 684.5625 188.72266 L 684.5625 181.65625 L 680.14844 178.125 L 678.38672 178.125 z M 678.38672 178.125 "/>
-        <path style="fill:#ffffff;" d="M 700.44922 213.41406 L 685.44922 201.06641 L 697.80078 201.06641 L 710.15234 213.41406 L 700.44922 213.41406 z M 700.44922 213.41406 "/>
-        <path style="fill:#ffffff;" d="M 714.56641 213.41406 L 714.56641 199.28906 L 728.67969 199.28906 L 728.67969 213.41406 L 714.56641 213.41406 z M 714.56641 213.41406 "/>
-        <path style="fill:#ffffff;" d="M 800.16016 169.30859 L 800.16016 181.65625 L 752.51172 181.65625 L 763.98438 169.30859 L 800.16016 169.30859 z M 800.16016 169.30859 "/>
-        <path style="fill:#ffffff;" d="M 800.16016 185.1875 L 800.16016 197.53516 L 756.92188 197.53516 L 756.92188 185.1875 L 800.16016 185.1875 z M 800.16016 185.1875 "/>
-        <path style="fill:#ffffff;" d="M 800.16016 201.06641 L 800.16016 213.41406 L 763.98438 213.41406 L 752.51172 201.06641 L 800.16016 201.06641 z M 800.16016 201.06641 "/>
-        <path style="fill:#ffffff;" d="M 74.0625 242.53125 L 369.30469 242.53125 L 360.48438 247.82812 L 74.0625 247.82812 z M 74.0625 242.53125 "/>
-        <path style="fill:#ffffff;" d="M 373.71484 247.82812 L 382.53906 242.53125 L 391.36328 242.53125 L 382.53906 247.82812 L 373.71484 247.82812 z M 373.71484 247.82812 "/>
-        <path style="fill:#ffffff;" d="M 386.95312 247.82812 L 395.77734 242.53125 L 404.59766 242.53125 L 395.77734 247.82812 L 386.95312 247.82812 z M 386.95312 247.82812 "/>
-        <path style="fill:#ffffff;" d="M 400.1875 247.82812 L 409.01172 242.53125 L 417.83594 242.53125 L 409.01172 247.82812 L 400.1875 247.82812 z M 400.1875 247.82812 "/>
-        <path style="fill:#ff0000;" d="M 413.42578 247.82812 L 422.25 242.53125 L 808.97266 242.53125 L 800.14844 247.82812 L 413.42578 247.82812 z M 413.42578 247.82812 "/>
+        <path style="fill:#2979ff;" d="M 74.0625 72.53125 L 369.30469 72.53125 L 360.48438 77.82812 L 74.0625 77.82812 Z"/>
+        <path style="fill:#2979ff;" d="M 373.71484 77.82812 L 382.53906 72.53125 L 391.36328 72.53125 L 382.53906 77.82812 Z"/>
+        <path style="fill:#2979ff;" d="M 386.95312 77.82812 L 395.77734 72.53125 L 404.59766 72.53125 L 395.77734 77.82812 Z"/>
+        <path style="fill:#2979ff;" d="M 400.1875 77.82812 L 409.01172 72.53125 L 417.83594 72.53125 L 409.01172 77.82812 Z"/>
+        <path style="fill:#ff0000;" d="M 413.42578 77.82812 L 422.25 72.53125 L 808.97266 72.53125 L 800.14844 77.82812 Z"/>
+        <path style="fill:#ffffff;" d="M 74.0625 99.30859 L 98.33203 99.30859 L 74.0625 143.41406 Z"/>
+        <path style="fill:#ffffff;" d="M 74.0625 143.41406 L 98.33203 99.30859 L 122.60156 143.41406 L 102.30469 143.41406 L 95.25 129.73828 L 80.23047 129.73828 Z"/>
+        <path style="fill:#ffffff;" d="M 176.46875 99.30859 L 196.76562 131.07422 L 196.76562 99.30859 L 214.41406 99.30859 L 214.41406 143.41406 L 193.23047 143.41406 L 172.05078 111.65234 L 172.05078 143.41406 L 154.40234 143.41406 L 154.40234 99.30859 Z"/>
+        <path style="fill:#ffffff;" d="M 220.96484 99.30859 L 220.96484 116.95312 L 245.15625 116.95312 L 233.6875 99.30859 Z"/>
+        <path style="fill:#ffffff;" d="M 220.96484 120.91797 L 220.96484 143.41406 L 238.61328 143.41406 L 238.61328 120.91797 Z"/>
+        <path style="fill:#ffffff;" d="M 314.19531 131.06641 L 314.19531 143.41406 L 243.53594 143.41406 L 232.0625 131.06641 Z"/>
+        <path style="fill:#ffffff;" d="M 364.71875 99.30859 L 388.98828 143.41406 L 368.6875 143.41406 L 361.63281 129.73828 L 333.38281 129.73828 L 326.32422 143.41406 L 306.02734 143.41406 L 330.29297 99.30859 Z M 347.50781 102.83984 L 340.44922 116.51562 L 354.56641 116.51562 Z"/>
+        <path style="fill:#ffffff;" d="M 390.3125 143.41406 L 390.3125 99.30859 L 413.25 99.30859 L 423.83984 121.37109 L 434.42578 99.30859 L 457.36719 99.30859 L 457.36719 143.41406 L 439.71875 143.41406 L 439.71875 118.72266 L 423.83984 143.41406 L 407.96094 118.72266 L 407.96094 143.41406 Z"/>
+        <path style="fill:#ffffff;" d="M 535.43359 99.30859 L 535.43359 116.95312 L 507.1875 116.95312 L 507.1875 125.77734 L 535.43359 125.77734 L 535.43359 143.41406 L 485.12891 143.41406 L 473.65625 131.06641 L 473.65625 111.65625 L 485.12891 99.30859 Z"/>
+        <path style="fill:#ffffff;" d="M 543.82031 143.41406 L 543.82031 129.28906 L 557.9375 129.28906 L 557.9375 143.41406 Z"/>
+        <path style="fill:#ffffff;" d="M 602.49609 99.30859 L 626.76562 143.41406 L 606.46484 143.41406 L 599.41016 129.73828 L 571.16016 129.73828 L 564.10156 143.41406 L 543.80469 143.41406 L 568.07031 99.30859 Z M 585.28516 102.83984 L 578.22656 116.51562 L 592.34375 116.51562 Z"/>
+        <path style="fill:#ffffff;" d="M 633.38281 143.41406 L 633.38281 129.28906 L 647.5 129.28906 L 647.5 143.41406 Z"/>
+        <path style="fill:#ffffff;" d="M 686.32812 99.30859 L 696.03516 108.125 L 696.03516 123.13281 L 686.32812 131.06641 L 678.38672 131.06641 L 678.38672 143.41406 L 660.73828 143.41406 L 660.73828 99.30859 Z M 678.38672 108.125 L 678.38672 122.24219 L 680.14844 122.24219 L 684.5625 118.72266 L 684.5625 111.65625 L 680.14844 108.125 Z"/>
+        <path style="fill:#ffffff;" d="M 700.44922 143.41406 L 685.44922 131.06641 L 697.80078 131.06641 L 710.15234 143.41406 Z"/>
+        <path style="fill:#ffffff;" d="M 714.56641 143.41406 L 714.56641 129.28906 L 728.67969 129.28906 L 728.67969 143.41406 Z"/>
+        <path style="fill:#ffffff;" d="M 800.16016 99.30859 L 800.16016 111.65625 L 752.51172 111.65625 L 763.98438 99.30859 Z"/>
+        <path style="fill:#ffffff;" d="M 800.16016 115.1875 L 800.16016 127.53516 L 756.92188 127.53516 L 756.92188 115.1875 Z"/>
+        <path style="fill:#ffffff;" d="M 800.16016 131.06641 L 800.16016 143.41406 L 763.98438 143.41406 L 752.51172 131.06641 Z"/>
+        <path style="fill:#ffffff;" d="M 74.0625 242.53125 L 369.30469 242.53125 L 360.48438 247.82812 L 74.0625 247.82812 Z"/>
+        <path style="fill:#ffffff;" d="M 373.71484 247.82812 L 382.53906 242.53125 L 391.36328 242.53125 L 382.53906 247.82812 Z"/>
+        <path style="fill:#ffffff;" d="M 386.95312 247.82812 L 395.77734 242.53125 L 404.59766 242.53125 L 395.77734 247.82812 Z"/>
+        <path style="fill:#ffffff;" d="M 400.1875 247.82812 L 409.01172 242.53125 L 417.83594 242.53125 L 409.01172 247.82812 Z"/>
+        <path style="fill:#ff0000;" d="M 413.42578 247.82812 L 422.25 242.53125 L 808.97266 242.53125 L 800.14844 247.82812 Z"/>
       </g>
     </svg>
   </a>
   <ul class="nav-links">
     <li><a href="#hero" class="active">Home</a></li>
     <li><a href="#about">About</a></li>
-    <li><a href="#achievements">Achievements</a></li>
-    <li><a href="#projects">Projects</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#gallery">Gallery</a></li>
-    <li><a href="#team">Team</a></li>
-    <li><a href="#recent">Recent</a></li>
-    <li><a href="#contact">Contact</a></li>
+    <li><a href="javascript:void(0)" onclick="openPage('achievements')">Achievements</a></li>
+    <li><a href="javascript:void(0)" onclick="openPage('projects')">Projects</a></li>
+    <li><a href="javascript:void(0)" onclick="openPage('roadmap')">Roadmap</a></li>
+    <li><a href="javascript:void(0)" onclick="openPage('gallery')">Gallery</a></li>
+    <li><a href="javascript:void(0)" onclick="openPage('team')">Team</a></li>
+    <li><a href="javascript:void(0)" onclick="openPage('recent')">Recent</a></li>
+    <li><a href="javascript:void(0)" onclick="openPage('contact')">Contact</a></li>
   </ul>
-  <div style="display:flex;align-items:center;gap:14px;">
-    <a href="#contact" class="btn-join">Join Us</a>
+  <div class="nav-right">
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle dark/light mode">
+      <div class="theme-toggle-track">
+        <div class="theme-toggle-bg"></div>
+      </div>
+      <div class="theme-toggle-thumb">
+        <span class="toggle-moon">🌙</span>
+        <span class="toggle-sun">☀️</span>
+      </div>
+    </button>
+    <a href="javascript:void(0)" onclick="openPage('contact')" class="btn-join">Join Us</a>
     <div class="hamburger" id="hamburger" onclick="toggleMobile()">
       <span></span><span></span><span></span>
     </div>
   </div>
 </nav>
 
-<section id="hero">
-  <div class="hero-bg"></div>
-  <canvas class="star-canvas" id="starCanvas"></canvas>
+<!-- ═══ PAGE OVERLAYS ═══ -->
 
-  <div class="moon-wrap moon-float">
-    <div class="moon-ring3"></div>
-    <div class="moon-ring2"></div>
-    <div class="moon-ring"></div>
-    <div class="moon-beam"></div>
-    <div class="moon">
-      <div class="moon-crater" style="width:60px;height:60px;top:18%;left:22%;"></div>
-      <div class="moon-crater" style="width:35px;height:35px;top:55%;left:60%;"></div>
-      <div class="moon-crater" style="width:20px;height:20px;top:35%;left:70%;"></div>
-      <div class="moon-crater" style="width:45px;height:45px;top:68%;left:25%;"></div>
-      <div class="moon-crater" style="width:15px;height:15px;top:20%;left:55%;"></div>
+<!-- ACHIEVEMENTS PAGE -->
+<div class="page-overlay" id="page-achievements">
+  <div class="page-back">
+    <button class="page-back-btn" onclick="closePage('achievements')"><span class="arrow">←</span> Back to Home</button>
+    <span class="page-back-title">Achievements</span>
+    <div></div>
+  </div>
+  <div class="page-content">
+    <div class="section-eyebrow">Recognition</div>
+    <div class="section-title">OUR ACHIEVEMENTS</div>
+    <div class="apicta-feature fade-up">
+      <img src="images/taiwanteampicM.jpeg" alt="Team CARE at APICTA 2025" class="apicta-img">
+      <div class="apicta-info">
+        <h3>APICTA Awards 2025 — Winner</h3>
+        <p>Team C.A.R.E. won the Asia Pacific ICT Alliance (APICTA) Awards 2025 in Kaohsiung, Taiwan. This international recognition highlights our innovation and impact in assistive technology.</p>
+        <div class="apicta-meta">
+          <div class="year">2025</div>
+          <div class="type">International Award</div>
+        </div>
+      </div>
+    </div>
+    <div class="achieve-grid">
+
+      <div class="achieve-card fade-up">
+        <div class="achieve-card-top">
+          <div class="achieve-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:32px;height:32px;color:#c8a84b"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01z"/></svg>
+          </div>
+          <div class="achieve-body">
+            <h3>APICTA Awards 2025</h3>
+            <p>Winner at the Asia Pacific ICT Alliance Awards 2025 in Kaohsiung, Taiwan, bringing glory to Bangladesh.</p>
+            <div class="achieve-meta">
+              <span class="achieve-year">2025</span>
+              <span class="badge-date">Dec 2025</span>
+              <span class="badge-intl">International</span>
+            </div>
+            <a href="https://www.facebook.com/teamcare.bd" target="_blank" class="achieve-fb-link">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+              View Post
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="achieve-card fade-up">
+        <div class="achieve-card-top">
+          <div class="achieve-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:32px;height:32px;color:#f4c430"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+          </div>
+          <div class="achieve-body">
+            <h3>Bangladesh ICT &amp; Innovation Award</h3>
+            <p>Champion among 250+ projects nationwide at the Bangladesh ICT and Innovation Award 2025.</p>
+            <div class="achieve-meta">
+              <span class="achieve-year">2025</span>
+              <span class="badge-date">Oct 2025</span>
+              <span class="badge-natl">National</span>
+            </div>
+            <a href="https://www.facebook.com/teamcare.bd" target="_blank" class="achieve-fb-link">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+              View Post
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="achieve-card fade-up">
+        <div class="achieve-card-top">
+          <div class="achieve-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:32px;height:32px;color:#b0bec5"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+          </div>
+          <div class="achieve-body">
+            <h3>WICE Silver Medal (Malaysia)</h3>
+            <p>Silver Medalist at the World Innovation Competition and Exhibition (WICE) among 1000+ global participants.</p>
+            <div class="achieve-meta">
+              <span class="achieve-year">2026</span>
+              <span class="badge-date">2026</span>
+              <span class="badge-intl">International</span>
+            </div>
+            <a href="https://www.facebook.com/teamcare.bd" target="_blank" class="achieve-fb-link">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+              View Post
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="achieve-card fade-up">
+        <div class="achieve-card-top">
+          <div class="achieve-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:32px;height:32px;color:#00e5ff"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          </div>
+          <div class="achieve-body">
+            <h3>GRIC Special Mention (Turkey)</h3>
+            <p>Earned Special Mention at the Global Robotics and Innovation Consortium (GRIC) among 350+ projects in Istanbul.</p>
+            <div class="achieve-meta">
+              <span class="achieve-year">2026</span>
+              <span class="badge-date">2026</span>
+              <span class="badge-intl">International</span>
+            </div>
+            <a href="https://www.facebook.com/teamcare.bd" target="_blank" class="achieve-fb-link">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+              View Post
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="achieve-card fade-up">
+        <div class="achieve-card-top">
+          <div class="achieve-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:32px;height:32px;color:#7986cb"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18"/></svg>
+          </div>
+          <div class="achieve-body">
+            <h3>National Science &amp; Tech Fests</h3>
+            <p>"Special 3rd Position" (46th Fest) and Runner-Up Senior Group (47th Fest), alongside multiple district champion titles.</p>
+            <div class="achieve-meta">
+              <span class="achieve-year">2025–2026</span>
+              <span class="badge-natl">National</span>
+            </div>
+            <a href="https://www.facebook.com/teamcare.bd" target="_blank" class="achieve-fb-link">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+              View Post
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="achieve-card fade-up">
+        <div class="achieve-card-top">
+          <div class="achieve-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:32px;height:32px;color:#f4c430"><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/><path d="M15 7A3 3 0 109 7"/><path d="M12 4v3"/></svg>
+          </div>
+          <div class="achieve-body">
+            <h3>16th DRMC Science Carnival</h3>
+            <p>Crowned Champion at the prestigious 16th DRMC Science Carnival 2025 organized by the DRMC Science Club.</p>
+            <div class="achieve-meta">
+              <span class="achieve-year">2025</span>
+              <span class="badge-date">May 2025</span>
+              <span class="badge-natl">National</span>
+            </div>
+            <a href="https://www.facebook.com/teamcare.bd" target="_blank" class="achieve-fb-link">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+              View Post
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="achieve-card fade-up">
+        <div class="achieve-card-top">
+          <div class="achieve-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:32px;height:32px;color:#f4c430"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+          </div>
+          <div class="achieve-body">
+            <h3>National Champion — Robo Display</h3>
+            <p>National Champion on Robo Display in TECHNOVATION-25 for outstanding innovation and presentation.</p>
+            <div class="achieve-meta">
+              <span class="achieve-year">2025</span>
+              <span class="badge-natl">National</span>
+            </div>
+            <a href="https://www.facebook.com/teamcare.bd" target="_blank" class="achieve-fb-link">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+              View Post
+            </a>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
+</div>
+
+<!-- PROJECTS PAGE -->
+<div class="page-overlay" id="page-projects">
+  <div class="page-back">
+    <button class="page-back-btn" onclick="closePage('projects')"><span class="arrow">←</span> Back to Home</button>
+    <span class="page-back-title">Projects</span>
+    <div></div>
+  </div>
+  <div class="page-content">
+    <div class="section-eyebrow">Our Work</div>
+    <div class="section-title">FEATURED PROJECTS</div>
+    <p class="project-details" style="text-align:center;margin-bottom:48px">The journey of the C.A.R.E. Wheelchair began nearly two years ago after witnessing the real-life mobility struggles of a paralysed family member. Since then, Team C.A.R.E has been continuously researching and developing affordable intelligent assistive technology solutions aimed at improving mobility, independence, and quality of life for physically challenged individuals in Bangladesh.</p>
+    <!-- C.A.R.E Wheelchair Feature Layout: 6 left | image center | 6 right -->
+    <div class="care-wheelchair-layout" id="careWcLayout">
+      <!-- LEFT 6 features -->
+      <div class="care-wc-left">
+        <div class="care-feat-item" style="--delay:0">
+          <div class="care-feat-dot" style="background:#00e5ff;box-shadow:0 0 10px #00e5ff"></div>
+          <span class="care-feat-name">AI &amp; IoT-Based Smart System</span>
+        </div>
+        <div class="care-feat-item" style="--delay:1">
+          <div class="care-feat-dot" style="background:#7c4dff;box-shadow:0 0 10px #7c4dff"></div>
+          <span class="care-feat-name">Head Movement Navigation</span>
+        </div>
+        <div class="care-feat-item" style="--delay:2">
+          <div class="care-feat-dot" style="background:#00e676;box-shadow:0 0 10px #00e676"></div>
+          <span class="care-feat-name">Voice Command Control</span>
+        </div>
+        <div class="care-feat-item" style="--delay:3">
+          <div class="care-feat-dot" style="background:#ff6d00;box-shadow:0 0 10px #ff6d00"></div>
+          <span class="care-feat-name">Finger Gesture Support</span>
+        </div>
+        <div class="care-feat-item" style="--delay:4">
+          <div class="care-feat-dot" style="background:#f50057;box-shadow:0 0 10px #f50057"></div>
+          <span class="care-feat-name">Real-Time Health Monitoring</span>
+        </div>
+        <div class="care-feat-item" style="--delay:5">
+          <div class="care-feat-dot" style="background:#ffd600;box-shadow:0 0 10px #ffd600"></div>
+          <span class="care-feat-name">Mobile App Connectivity</span>
+        </div>
+      </div>
+
+      <!-- CENTER — wheelchair image placeholder -->
+      <div class="care-wc-center">
+        <div class="care-wc-glow"></div>
+        <div class="care-wc-placeholder" id="careWcImg">
+          <svg viewBox="0 0 200 210" fill="none" width="120" height="130" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="60" cy="168" r="36" stroke="#2979ff" stroke-width="3"/>
+            <circle cx="60" cy="168" r="20" stroke="#2979ff" stroke-width="1.5" opacity="0.4"/>
+            <circle cx="155" cy="168" r="22" stroke="#2979ff" stroke-width="2.5"/>
+            <path d="M60 132 L72 74 L122 74 L126 98" stroke="#2979ff" stroke-width="3" stroke-linecap="round"/>
+            <path d="M72 74 L66 42 L96 42" stroke="#2979ff" stroke-width="2.5" stroke-linecap="round"/>
+            <ellipse cx="81" cy="33" rx="13" ry="13" stroke="#2979ff" stroke-width="2"/>
+            <path d="M126 98 L155 146" stroke="#2979ff" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M112 98 L60 132" stroke="#2979ff" stroke-width="2" stroke-linecap="round"/>
+            <rect x="72" y="68" width="50" height="32" rx="4" stroke="#2979ff" stroke-width="1.5" opacity="0.3"/>
+          </svg>
+          <span style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);text-align:center;padding:0 16px">Add wheelchair image here</span>
+        </div>
+      </div>
+
+      <!-- RIGHT 6 features -->
+      <div class="care-wc-right">
+        <div class="care-feat-item" style="--delay:0">
+          <div class="care-feat-dot" style="background:#00e5ff;box-shadow:0 0 10px #00e5ff"></div>
+          <span class="care-feat-name">Home Automation Integration</span>
+        </div>
+        <div class="care-feat-item" style="--delay:1">
+          <div class="care-feat-dot" style="background:#7c4dff;box-shadow:0 0 10px #7c4dff"></div>
+          <span class="care-feat-name">Obstacle Detection &amp; Safety</span>
+        </div>
+        <div class="care-feat-item" style="--delay:2">
+          <div class="care-feat-dot" style="background:#00e676;box-shadow:0 0 10px #00e676"></div>
+          <span class="care-feat-name">Emergency Alert System</span>
+        </div>
+        <div class="care-feat-item" style="--delay:3">
+          <div class="care-feat-dot" style="background:#ff6d00;box-shadow:0 0 10px #ff6d00"></div>
+          <span class="care-feat-name">Affordable Assistive Tech</span>
+        </div>
+        <div class="care-feat-item" style="--delay:4">
+          <div class="care-feat-dot" style="background:#f50057;box-shadow:0 0 10px #f50057"></div>
+          <span class="care-feat-name">ECG Signal Research</span>
+        </div>
+        <div class="care-feat-item" style="--delay:5">
+          <div class="care-feat-dot" style="background:#ffd600;box-shadow:0 0 10px #ffd600"></div>
+          <span class="care-feat-name">Smart Power Management</span>
+        </div>
+      </div>
+    </div>
+    <div class="projects-grid">
+      <div class="project-card fade-up"><div class="project-thumb" style="font-size:64px">♿</div><div class="project-body"><div class="project-tag">AI &amp; IoT · Flagship</div><h3>C.A.R.E Wheelchair (Version 2)</h3><p>AI &amp; IoT-based smart wheelchair system featuring head movement, voice command, and finger gesture controls, complete with obstacle detection safety systems.</p><a href="#" class="project-link">View Project →</a></div></div>
+      <div class="project-card fade-up"><div class="project-thumb" style="font-size:64px">💡</div><div class="project-body"><div class="project-tag">Foundation</div><h3>C.A.R.E Wheelchair (Version 1)</h3><p>The original prototype that started our journey, built to tackle real-life mobility struggles with essential smart assistive technologies.</p><a href="#" class="project-link">View Project →</a></div></div>
+      <div class="project-card fade-up"><div class="project-thumb" style="font-size:64px">🧠</div><div class="project-body"><div class="project-tag">Healthcare &amp; Safety</div><h3>Smart Ecosystem Integration</h3><p>Real-time health monitoring via ECG signal research, integrated home automation, and an emergency alert feature for absolute user independence.</p><a href="#" class="project-link">View Project →</a></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ROADMAP PAGE -->
+<div class="page-overlay" id="page-roadmap">
+  <div class="page-back">
+    <button class="page-back-btn" onclick="closePage('roadmap')"><span class="arrow">←</span> Back to Home</button>
+    <span class="page-back-title">Roadmap</span>
+    <div></div>
+  </div>
+  <div class="page-content">
+    <div class="section-eyebrow">Our Journey</div>
+    <div class="section-title tagline-reveal" id="roadmapTitle">OUR ROADMAP</div>
+
+    <div class="roadmap-track">
+
+      <!-- 1 -->
+      <div class="roadmap-item fade-up">
+        <div class="road-content">
+          <div class="road-card status-completed">
+            <div class="road-year">MAY 2025</div>
+            <h3 class="road-letter-title">TEAM FORMATION</h3>
+            <p>Team C.A.R.E was founded by a group of passionate students from Adamjee Cantonment College with a vision to develop smart, affordable, and accessible assistive technology for people with disabilities in Bangladesh.</p>
+            <div class="road-status-row">
+              <span class="road-status status-done">✓ Completed</span>
+            </div>
+          </div>
+        </div>
+        <div class="road-dot-wrap"><div class="road-dot done"></div></div>
+        <div style="flex:1"></div>
+      </div>
+
+      <!-- 2 -->
+      <div class="roadmap-item fade-up">
+        <div style="flex:1"></div>
+        <div class="road-dot-wrap"><div class="road-dot done"></div></div>
+        <div class="road-content">
+          <div class="road-card status-completed">
+            <div class="road-year">MAY 2025</div>
+            <h3 class="road-letter-title">FIRST PROTOTYPE — C.A.R.E WHEELCHAIR V1.0</h3>
+            <p>Designed and developed the first functional prototype of the C.A.R.E Wheelchair featuring hand gesture control, basic IoT integration, and smart mobility assistance systems.</p>
+            <div class="road-status-row">
+              <span class="road-status status-done">✓ Completed</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 -->
+      <div class="roadmap-item fade-up">
+        <div class="road-content">
+          <div class="road-card status-completed">
+            <div class="road-year">LATE 2025</div>
+            <h3 class="road-letter-title">ADVANCED CONTROL SYSTEM &amp; IMPROVEMENTS</h3>
+            <p>Upgraded the wheelchair with head gesture control, improved responsiveness, enhanced safety systems, and smarter user interaction features for better accessibility and independence.</p>
+            <div class="road-status-row">
+              <span class="road-status status-done">✓ Completed</span>
+            </div>
+          </div>
+        </div>
+        <div class="road-dot-wrap"><div class="road-dot done"></div></div>
+        <div style="flex:1"></div>
+      </div>
+
+      <!-- 4 -->
+      <div class="roadmap-item fade-up">
+        <div style="flex:1"></div>
+        <div class="road-dot-wrap"><div class="road-dot done"></div></div>
+        <div class="road-content">
+          <div class="road-card status-completed">
+            <div class="road-year">EARLY 2026</div>
+            <h3 class="road-letter-title">C.A.R.E WHEELCHAIR V2.0 + AI INTEGRATION</h3>
+            <p>Developed the advanced V2.0 prototype featuring AI-powered obstacle detection, voice interaction, smart navigation assistance, live monitoring, and an IoT-based dashboard system.</p>
+            <div class="road-status-row">
+              <span class="road-status status-done">✓ Completed</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5 ACTIVE -->
+      <div class="roadmap-item fade-up">
+        <div class="road-content">
+          <div class="road-card status-active">
+            <div class="road-year">2026 — NOW</div>
+            <h3 class="road-letter-title">RESEARCH &amp; DEVELOPMENT</h3>
+            <p>Currently focused on improving autonomous mobility, AI accuracy, real-world usability, and intelligent assistive systems while seeking sponsorships, partnerships, and research opportunities.</p>
+            <div class="road-status-row">
+              <span class="road-status status-active">⚡ In Progress</span>
+            </div>
+          </div>
+        </div>
+        <div class="road-dot-wrap"><div class="road-dot active"></div></div>
+        <div style="flex:1"></div>
+      </div>
+
+      <!-- 6 -->
+      <div class="roadmap-item fade-up">
+        <div style="flex:1"></div>
+        <div class="road-dot-wrap"><div class="road-dot future"></div></div>
+        <div class="road-content">
+          <div class="road-card status-vision">
+            <div class="road-year">2027</div>
+            <h3 class="road-letter-title">COMMERCIAL LAUNCH &amp; SMART MOBILITY</h3>
+            <p>Planning to commercially launch the C.A.R.E Wheelchair in Bangladesh with upgraded smart mobility features, improved accessibility, and affordable assistive technology solutions for real-world users.</p>
+            <div class="road-status-row">
+              <span class="road-status status-future">◎ Vision</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7 -->
+      <div class="roadmap-item fade-up">
+        <div class="road-content">
+          <div class="road-card status-vision">
+            <div class="road-year">2027+</div>
+            <h3 class="road-letter-title">BRAIN SIGNAL CONTROL &amp; NEXT-GEN AI</h3>
+            <p>Researching advanced assistive technologies where wheelchairs can interact with human brain signals and neural responses, enabling smarter and more independent mobility systems through AI, neuroscience, and robotics.</p>
+            <div class="road-status-row">
+              <span class="road-status status-future">◎ Vision</span>
+            </div>
+          </div>
+        </div>
+        <div class="road-dot-wrap"><div class="road-dot future"></div></div>
+        <div style="flex:1"></div>
+      </div>
+
+      <!-- 8 -->
+      <div class="roadmap-item fade-up">
+        <div style="flex:1"></div>
+        <div class="road-dot-wrap"><div class="road-dot future"></div></div>
+        <div class="road-content">
+          <div class="road-card status-vision">
+            <div class="road-year">FUTURE GOAL</div>
+            <h3 class="road-letter-title">C.A.R.E RESEARCH LAB &amp; GLOBAL EXPANSION</h3>
+            <p>Establishing the C.A.R.E Research Lab to develop next-generation healthcare, AI, robotics, and assistive technologies while representing Bangladesh globally through innovation, research, and impactful engineering solutions.</p>
+            <div class="road-status-row">
+              <span class="road-status status-future">◎ Vision</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- GALLERY PAGE -->
+<div class="page-overlay" id="page-gallery">
+  <div class="page-back">
+    <button class="page-back-btn" onclick="closePage('gallery')"><span class="arrow">←</span> Back to Home</button>
+    <span class="page-back-title">Gallery</span>
+    <div></div>
+  </div>
+  <div class="page-content">
+    <div class="section-eyebrow">Behind The Scenes</div>
+    <div class="section-title">OUR GALLERY</div>
+    <div class="gallery-filter">
+      <button class="filter-btn active" onclick="filterGallery('all',this)">All</button>
+      <button class="filter-btn" onclick="filterGallery('events',this)">Events</button>
+      <button class="filter-btn" onclick="filterGallery('lab',this)">Lab Work</button>
+      <button class="filter-btn" onclick="filterGallery('team',this)">Team</button>
+      <button class="filter-btn" onclick="filterGallery('awards',this)">Awards</button>
+    </div>
+    <div class="gallery-grid" id="galleryGrid">
+      <div class="gallery-item wide" data-cat="team" onclick="openLightbox('👥','Team CARE at ROBOFEST 2024','Our full team after winning the 1st place trophy at the national ROBOFEST 2024 competition.')"><div class="gallery-inner">👥</div><div class="gallery-overlay"><h4>Team Photo</h4><p>ROBOFEST 2024</p></div></div>
+      <div class="gallery-item" data-cat="lab" onclick="openLightbox('🔧','Wheelchair Assembly Lab','Engineers working on the CARE Wheelchair v2.0 chassis and electronics in our campus lab.')"><div class="gallery-inner">🔧</div><div class="gallery-overlay"><h4>Lab Session</h4><p>Wheelchair Build</p></div></div>
+      <div class="gallery-item tall" data-cat="awards" onclick="openLightbox('🏆','1st Place Trophy','Team CARE receives the national 1st place trophy at ROBOFEST 2024.')"><div class="gallery-inner">🏆</div><div class="gallery-overlay"><h4>Award Ceremony</h4><p>ROBOFEST 2024</p></div></div>
+      <div class="gallery-item" data-cat="events" onclick="openLightbox('🌏','Asian Robotics Forum','Our team representing Bangladesh at the Asian Robotics Forum 2024.')"><div class="gallery-inner">🌏</div><div class="gallery-overlay"><h4>Asian Robotics Forum</h4><p>International Event</p></div></div>
+      <div class="gallery-item" data-cat="lab" onclick="openLightbox('💻','AI Development','Programming and testing the AI obstacle detection module for CARE Wheelchair v2.0.')"><div class="gallery-inner">💻</div><div class="gallery-overlay"><h4>AI Development</h4><p>Software Lab</p></div></div>
+      <div class="gallery-item" data-cat="events" onclick="openLightbox('📺','National TV Feature','Team CARE featured on national television showcasing our CARE Wheelchair innovation.')"><div class="gallery-inner">📺</div><div class="gallery-overlay"><h4>TV Feature</h4><p>National Coverage</p></div></div>
+      <div class="gallery-item wide" data-cat="events" onclick="openLightbox('♿','CARE Wheelchair Demo','Live demonstration of CARE Wheelchair v2.0 at the national innovation expo.')"><div class="gallery-inner">♿</div><div class="gallery-overlay"><h4>Wheelchair Demo Day</h4><p>Innovation Expo</p></div></div>
+      <div class="gallery-item" data-cat="team" onclick="openLightbox('🎓','Research Presentation','Team members presenting research findings at the IEEE Student Conference 2023.')"><div class="gallery-inner">🎓</div><div class="gallery-overlay"><h4>IEEE Conference</h4><p>Research Paper</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TEAM PAGE -->
+<div class="page-overlay" id="page-team">
+  <div class="page-back">
+    <button class="page-back-btn" onclick="closePage('team')"><span class="arrow">←</span> Back to Home</button>
+    <span class="page-back-title">The Team</span>
+    <div></div>
+  </div>
+  <div class="page-content">
+    <div class="section-eyebrow">The People</div>
+    <div class="section-title">MEET THE TEAM</div>
+    <div class="team-grid" style="max-width:1200px;margin:0 auto">
+      <div class="member-card fade-up"><div class="member-avatar">👨‍💻</div><h4>Team Lead</h4><p class="role">Founder &amp; Lead</p><div class="member-socials"><a href="#" title="LinkedIn">in</a><a href="#" title="Facebook">f</a></div></div>
+      <div class="member-card fade-up"><div class="member-avatar">👨‍🔬</div><h4>Research Head</h4><p class="role">R&amp;D Division</p><div class="member-socials"><a href="#" title="LinkedIn">in</a><a href="#" title="Facebook">f</a></div></div>
+      <div class="member-card fade-up"><div class="member-avatar">👩‍💻</div><h4>Software Lead</h4><p class="role">AI / ML Engineer</p><div class="member-socials"><a href="#" title="LinkedIn">in</a><a href="#" title="GitHub">⌥</a></div></div>
+      <div class="member-card fade-up"><div class="member-avatar">👨‍🔧</div><h4>Hardware Lead</h4><p class="role">Electronics &amp; IoT</p><div class="member-socials"><a href="#" title="LinkedIn">in</a><a href="#" title="Facebook">f</a></div></div>
+      <div class="member-card fade-up"><div class="member-avatar">👩‍🎨</div><h4>Design Lead</h4><p class="role">UX / Mechanical</p><div class="member-socials"><a href="#" title="LinkedIn">in</a><a href="#" title="Facebook">f</a></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- RECENT PAGE -->
+<div class="page-overlay" id="page-recent">
+  <div class="page-back">
+    <button class="page-back-btn" onclick="closePage('recent')"><span class="arrow">←</span> Back to Home</button>
+    <span class="page-back-title">Recent News</span>
+    <div></div>
+  </div>
+  <div class="page-content">
+    <div class="news-header" style="max-width:100%">
+      <div class="news-header-left">
+        <div class="section-eyebrow" style="text-align:left">Latest News</div>
+        <div class="section-title" style="text-align:left;margin-bottom:0">RECENT UPDATES</div>
+      </div>
+    </div>
+    <div class="news-grid" style="max-width:100%;margin-top:40px;grid-template-columns:repeat(2,1fr)">
+      <div class="news-card fade-up"><div class="news-thumb">🏆</div><div class="news-body"><div class="news-date">Oct 18, 2025</div><h4>Champion at Bangladesh ICT &amp; Innovation Award</h4><a href="#" class="news-arrow">→</a></div></div>
+      <div class="news-card fade-up"><div class="news-thumb">🌍</div><div class="news-body"><div class="news-date">Dec 01, 2025</div><h4>APICTA Awards 2025 Winner in Taiwan</h4><a href="#" class="news-arrow">→</a></div></div>
+      <div class="news-card fade-up"><div class="news-thumb">🏅</div><div class="news-body"><div class="news-date">May 03, 2025</div><h4>Champion at 16th DRMC Science Carnival</h4><a href="#" class="news-arrow">→</a></div></div>
+      <div class="news-card fade-up"><div class="news-thumb">✈️</div><div class="news-body"><div class="news-date">Sept 20, 2026</div><h4>Team Represents Bangladesh at WICE Malaysia</h4><a href="#" class="news-arrow">→</a></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT PAGE -->
+<div class="page-overlay" id="page-contact">
+  <div class="page-back">
+    <button class="page-back-btn" onclick="closePage('contact')"><span class="arrow">←</span> Back to Home</button>
+    <span class="page-back-title">Contact Us</span>
+    <div></div>
+  </div>
+  <div class="page-content">
+    <div class="section-eyebrow">Get In Touch</div>
+    <div class="section-title">CONTACT US</div>
+    <div class="contact-grid" style="max-width:1100px;margin:0 auto">
+      <div class="fade-up">
+        <h3 style="font-family:'Bebas Neue';font-size:42px;letter-spacing:4px;color:var(--text);margin-bottom:20px">LET'S WORK TOGETHER</h3>
+        <p style="color:var(--muted);font-size:16px;line-height:1.8;margin-bottom:36px">Want to collaborate, sponsor our research, or join the team? We'd love to hear from you.</p>
+        <div class="contact-detail"><div class="contact-icon">📧</div><div class="contact-detail-text"><strong>Email</strong><span>teamcareofficial25@gmail.com</span></div></div>
+        <div class="contact-detail"><div class="contact-icon">📍</div><div class="contact-detail-text"><strong>Location</strong><span>Dhaka, Bangladesh</span></div></div>
+        <div class="contact-detail"><div class="contact-icon">📱</div><div class="contact-detail-text"><strong>Social Media</strong><span>@teamcare.bd</span></div></div>
+      </div>
+      <div class="fade-up">
+        <div class="contact-form">
+          <div class="form-row">
+            <div class="form-group"><label>Your Name</label><input type="text" placeholder="Full Name"></div>
+            <div class="form-group"><label>Email</label><input type="email" placeholder="your@email.com"></div>
+          </div>
+          <div class="form-group"><label>Purpose</label><select><option>Collaboration</option><option>Join Team</option><option>Sponsorship</option><option>Media / Press</option><option>General Inquiry</option></select></div>
+          <div class="form-group"><label>Subject</label><input type="text" placeholder="What's this about?"></div>
+          <div class="form-group"><label>Message</label><textarea rows="5" placeholder="Tell us about yourself or your idea..."></textarea></div>
+          <button class="btn-primary" style="width:100%;justify-content:center;font-size:15px">Send Message →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LIGHTBOX ═══ -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <div class="lightbox-inner">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <span class="lightbox-emoji" id="lbEmoji">🏆</span>
+    <h3 id="lbTitle">Title</h3>
+    <p id="lbDesc">Description</p>
+  </div>
+</div>
+
+<!-- ═══ MAIN HERO ═══ -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <canvas id="heroBgCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
+
+  <!-- Full-hero neural canvas (background, z-index:0) -->
+  <canvas id="heroAbstractCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;"></canvas>
 
   <div class="hero-content">
     <div class="hero-eyebrow">Innovating Mobility</div>
@@ -412,30 +2048,60 @@ footer{background:var(--bg);border-top:1px solid var(--border);padding:70px 60px
     <p class="hero-desc">Team <strong>C.A.R.E.</strong> (Controlled Assistive Responsive Equipment) is a student research team from Bangladesh developing assistive technologies to empower independence and improve lives.</p>
     <div class="hero-btns">
       <a href="#about" class="btn-primary">Discover More →</a>
-      <a href="#projects" class="btn-secondary">Our Projects</a>
+      <a href="javascript:void(0)" onclick="openPage('projects')" class="btn-secondary">Our Projects</a>
     </div>
   </div>
   <div class="scroll-indicator">SCROLL</div>
+
+
 </section>
 
+<!-- ═══ WHAT WE DO ═══ -->
 <section id="what">
   <div class="section-eyebrow">What We Do</div>
-  <div class="section-title">RESEARCH<span class="dot">.</span> INNOVATE<span class="dot">.</span> IMPACT<span class="dot">.</span></div>
-  <div class="cards-grid">
-    <div class="card fade-up"><div class="card-icon">🔬</div><h3>Research</h3><p>Exploring cutting-edge technologies to solve real-life challenges faced by people with disabilities across Bangladesh.</p></div>
-    <div class="card fade-up"><div class="card-icon">💡</div><h3>Innovate</h3><p>Designing & building affordable assistive solutions powered by AI & IoT for a better tomorrow.</p></div>
-    <div class="card fade-up"><div class="card-icon">🚀</div><h3>Develop</h3><p>Prototyping, testing and refining to create reliable products that truly empower people in real-world conditions.</p></div>
-    <div class="card fade-up"><div class="card-icon">🤝</div><h3>Empower</h3><p>Empowering people with disabilities through technology, independence, and community-driven support systems.</p></div>
+  <div class="section-title tagline-reveal">
+    <span class="tag-word">RESEARCH<span style="color:var(--blue)">.</span></span>&nbsp;
+    <span class="tag-word">INNOVATE<span style="color:var(--blue)">.</span></span>&nbsp;
+    <span class="tag-word">IMPACT<span style="color:var(--blue)">.</span></span>
   </div>
-</section>
-
+  <div class="cards-grid">
+    <div class="card fade-up">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--blue)"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18"/></svg>
+      </div>
+      <h3>Research</h3>
+      <p>Exploring cutting-edge technologies to solve real-life challenges faced by people with disabilities across Bangladesh.</p>
+    </div>
+    <div class="card fade-up">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--blue)"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <h3>Innovate</h3>
+      <p>Designing &amp; building affordable assistive solutions powered by AI &amp; IoT for a better tomorrow.</p>
+    </div>
+    <div class="card fade-up">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--blue)"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07M8.46 8.46a5 5 0 000 7.07"/></svg>
+      </div>
+      <h3>Develop</h3>
+      <p>Prototyping, testing and refining to create reliable products that truly empower people in real-world conditions.</p>
+    </div>
+    <div class="card fade-up">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--blue)"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      </div>
+      <h3>Empower</h3>
+      <p>Empowering people with disabilities through technology, independence, and community-driven support systems.</p>
+    </div>
+  </div>
+</section><!-- ═══ ABOUT ═══ -->
 <section id="about">
   <div class="about-grid">
     <div class="fade-up">
       <div class="about-eyebrow">About Us</div>
-      <h2 class="about-title">WE ARE<br>TEAM <span class="accent">C.A.R.E</span></h2>
-      <p class="about-text">Team C.A.R.E is Bangladesh’s first nationally and internationally recognized student-led assistive technology innovation team formed by students from Notre Dame College and Adamjee Cantonment College, Dhaka, dedicated to developing intelligent and affordable solutions for physically challenged individuals. The team works on research and innovation in assistive technology, with the C.A.R.E. Wheelchair serving as its flagship project — an AI and IoT-based smart wheelchair designed to enhance mobility, safety, and independence through modern technology.</p>
-      <a href="#achievements" class="btn-outline">Our Achievements →</a>
+      <h2 class="about-title tagline-reveal">WE ARE<br>TEAM <span class="accent">C.A.R.E</span></h2>
+      <p class="about-text">Team C.A.R.E is Bangladesh's first nationally and internationally recognized student-led assistive technology innovation team formed by students from Notre Dame College and Adamjee Cantonment College, Dhaka, dedicated to developing intelligent and affordable solutions for physically challenged individuals. The team works on research and innovation in assistive technology, with the <strong>C.A.R.E. Wheelchair</strong> serving as its flagship project — an AI and IoT-based smart wheelchair designed to enhance mobility, safety, and independence.</p>
+      <a href="javascript:void(0)" onclick="openPage('achievements')" class="btn-outline">Our Achievements →</a>
     </div>
     <div class="fade-up">
       <div class="video-card">
@@ -463,452 +2129,63 @@ footer{background:var(--bg);border-top:1px solid var(--border);padding:70px 60px
   </div>
 </section>
 
+<!-- ═══ STATS ═══ -->
 <section id="stats">
   <div class="stats-grid">
-    <div class="stat-item fade-up"><div class="stat-icon">🏆</div><div><div class="stat-num" data-target="20" data-plus="true">20+</div><div class="stat-label">Awards Won</div></div></div>
-    <div class="stat-item fade-up"><div class="stat-icon">👥</div><div><div class="stat-num" data-target="3">3</div><div class="stat-label">Team Members</div></div></div>
-    <div class="stat-item fade-up"><div class="stat-icon">🚀</div><div><div class="stat-num" data-target="3" data-plus="true">3+</div><div class="stat-label">Projects</div></div></div>
-    <div class="stat-item fade-up"><div class="stat-icon">🌍</div><div><div class="stat-num" data-target="2" data-plus="true">2+</div><div class="stat-label">Years of Impact</div></div></div>
+    <div class="stat-item fade-up"><div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;color:var(--blue)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.86L12 17.77l-6.18 3.23L7 14.14 2 9.27l6.91-1.01z"/></svg></div><div><div class="stat-num" data-target="20" data-plus="true">20+</div><div class="stat-label">Awards Won</div></div></div>
+    <div class="stat-item fade-up"><div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;color:var(--blue)"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div><div><div class="stat-num" data-target="3">3</div><div class="stat-label">Team Members</div></div></div>
+    <div class="stat-item fade-up"><div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;color:var(--blue)"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div><div class="stat-num" data-target="3" data-plus="true">3+</div><div class="stat-label">Projects</div></div></div>
+    <div class="stat-item fade-up"><div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;color:var(--blue)"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div><div><div class="stat-num" data-target="2" data-plus="true">2+</div><div class="stat-label">Years of Impact</div></div></div>
   </div>
 </section>
 
-<section id="achievements">
-  <div class="section-eyebrow">Recognition</div>
-  <div class="section-title">OUR ACHIEVEMENTS</div>
-  <div class="apicta-feature fade-up">
-    <img src="images/taiwanteampicM.jpeg" alt="Team CARE at APICTA 2025" class="apicta-img">
-    <div class="apicta-info">
-      <h3>APICTA Awards 2025 — Winner</h3>
-      <p>Team C.A.R.E. won the Asia Pacific ICT Alliance (APICTA) Awards 2025 in Kaohsiung, Taiwan. This international recognition highlights our innovation and impact in assistive technology.</p>
-      <div class="apicta-meta">
-        <div class="year">2025</div>
-        <div class="type">International Award</div>
-      </div>
-    </div>
-  </div>
-  <div class="achieve-grid">
-    <div class="achieve-card fade-up">
-      <div class="achieve-badge">🏆</div>
-      <div class="achieve-body">
-        <h3>APICTA Awards 2025</h3>
-        <p>Winner at the Asia Pacific ICT Alliance Awards 2025 in Kaohsiung, Taiwan, bringing glory to Bangladesh.</p>
-        <div class="achieve-year">2025</div>
-        <span class="road-status status-done">International</span>
-      </div>
-    </div>
-    <div class="achieve-card fade-up">
-      <div class="achieve-badge">🥇</div>
-      <div class="achieve-body">
-        <h3>Bangladesh ICT & Innovation Award</h3>
-        <p>Champion among 250+ projects nationwide at the Bangladesh ICT and Innovation Award 2025.</p>
-        <div class="achieve-year">2025</div>
-        <span class="road-status status-done">National</span>
-      </div>
-    </div>
-    <div class="achieve-card fade-up">
-      <div class="achieve-badge">🥈</div>
-      <div class="achieve-body">
-        <h3>WICE Silver Medal (Malaysia)</h3>
-        <p>Silver Medalist at the World Innovation Competition and Exhibition (WICE) among 1000+ global participants.</p>
-        <div class="achieve-year">2026</div>
-        <span class="road-status status-done">International</span>
-      </div>
-    </div>
-    <div class="achieve-card fade-up">
-      <div class="achieve-badge">🌏</div>
-      <div class="achieve-body">
-        <h3>GRIC Special Mention (Turkey)</h3>
-        <p>Earned Special Mention at the Global Robotics and Innovation Consortium (GRIC) among 350+ projects in Istanbul.</p>
-        <div class="achieve-year">2026</div>
-        <span class="road-status status-done">International</span>
-      </div>
-    </div>
-    <div class="achieve-card fade-up">
-      <div class="achieve-badge">🔬</div>
-      <div class="achieve-body">
-        <h3>National Science & Tech Fests</h3>
-        <p>"Special 3rd Position" (46th Fest) and Runner-Up Senior Group (47th Fest), alongside multiple district champion titles.</p>
-        <div class="achieve-year">2025 - 2026</div>
-        <span class="road-status status-done">National</span>
-      </div>
-    </div>
-    <div class="achieve-card fade-up">
-      <div class="achieve-badge">🏅</div>
-      <div class="achieve-body">
-        <h3>16th DRMC Science Carnival</h3>
-        <p>Crowned Champion at the prestigious 16th DRMC Science Carnival 2025 organized by the DRMC Science Club.</p>
-        <div class="achieve-year">2025</div>
-        <span class="road-status status-done">National</span>
-      </div>
-    </div>
-    <div class="achieve-card fade-up">
-      <div class="achieve-badge">🥇</div>
-      <div class="achieve-body">
-        <h3>National Champion — Robo Display</h3>
-        <p>National Champion on Robo Display in TECHNOVATION-25 for outstanding innovation and presentation.</p>
-        <div class="achieve-year">2025</div>
-        <span class="road-status status-done">National</span>
-      </div>
-    </div>
-    <div class="achieve-card fade-up">
-      <div class="achieve-badge">🥇</div>
-      <div class="achieve-body">
-        <h3>National Champion — Business Project Display</h3>
-        <p>National Champion on Business Project Display in SAGC BUSINESS FEST 2025 for exceptional project vision and execution.</p>
-        <div class="achieve-year">2025</div>
-        <span class="road-status status-done">National</span>
-      </div>
-    </div>
-    <div class="achieve-card fade-up">
-      <div class="achieve-badge">🥈</div>
-      <div class="achieve-body">
-        <h3>Runner-Up — Project</h3>
-        <p>Runner-up on project in 2nd DRMC National Math Summit 2025, showcasing strong technical research and design.</p>
-        <div class="achieve-year">2025</div>
-        <span class="road-status status-done">National</span>
-      </div>
-    </div>
-    <div class="achieve-card fade-up">
-      <div class="achieve-badge">🥈</div>
-      <div class="achieve-body">
-        <h3>Runner-Up — RoboArk Project Display</h3>
-        <p>Runner-up on project display in RoboArk-2025 at Adamjee Cantonment College for an outstanding robotics showcase.</p>
-        <div class="achieve-year">2025</div>
-        <span class="road-status status-done">National</span>
-      </div>
-    </div>
-    <div class="achieve-card fade-up">
-      <div class="achieve-badge">🥈</div>
-      <div class="achieve-body">
-        <h3>Runner-Up — 47th National Science & Technology Week</h3>
-        <p>Runner-up on project display in the 47th National Science and Technology Week 2026 (Dhaka district round).</p>
-        <div class="achieve-year">2026</div>
-        <span class="road-status status-done">National</span>
-      </div>
-    </div>
-    <div class="achieve-card fade-up">
-      <div class="achieve-badge">🥈</div>
-      <div class="achieve-body">
-        <h3>Runner-Up — DRMC International IT Fest</h3>
-        <p>Runner up in DRMC International IT Fest 2025 for excellence in technology presentation and innovation.</p>
-        <div class="achieve-year">2025</div>
-        <span class="road-status status-done">International</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="projects">
-  <div class="section-eyebrow">Our Work</div>
-  <div class="section-title">FEATURED PROJECTS</div>
-  <p class="project-details">The journey of the C.A.R.E. Wheelchair began nearly two years ago after witnessing the real-life mobility struggles of a paralysed family member. Since then, Team C.A.R.E has been continuously researching and developing affordable intelligent assistive technology solutions aimed at improving mobility, independence, and quality of life for physically challenged individuals in Bangladesh. Today, according to the World Health Organization, over 1.3 billion people, nearly 16% of the world’s population — live with disabilities, many of whom still face major mobility limitations and lack access to affordable and advanced assistive mobility technology, especially in developing countries like Bangladesh.</p>
-  <ul class="project-features">
-    <li>AI & IoT-Based Smart Wheelchair System</li>
-    <li>Head Movement Controlled Navigation</li>
-    <li>Voice Command-Based Control</li>
-    <li>Finger Gesture Control Support</li>
-    <li>Real-Time Health Monitoring System</li>
-    <li>Mobile App Connectivity & Remote Monitoring</li>
-    <li>Home Automation Integration</li>
-    <li>Obstacle Detection & Safety System</li>
-    <li>Emergency Alert & Assistance Feature</li>
-    <li>Affordable Assistive Technology Solution</li>
-    <li>ECG Signal-Based Research Integration</li>
-    <li>Smart Battery & Power Management System</li>
-  </ul>
-  <div class="projects-grid">
-    <div class="project-card fade-up">
-      <div class="project-thumb">♿</div>
-      <div class="project-body">
-        <div class="project-tag">AI & IoT · Flagship</div>
-        <h3>C.A.R.E Wheelchair (Version 2)</h3>
-        <p>AI & IoT-based smart wheelchair system featuring head movement, voice command, and finger gesture controls, complete with obstacle detection safety systems.</p>
-        <a href="#" class="project-link">View Project →</a>
-      </div>
-    </div>
-    <div class="project-card fade-up">
-      <div class="project-thumb">💡</div>
-      <div class="project-body">
-        <div class="project-tag">Foundation</div>
-        <h3>C.A.R.E Wheelchair (Version 1)</h3>
-        <p>The original prototype that started our journey, built to tackle real-life mobility struggles with essential smart assistive technologies.</p>
-        <a href="#" class="project-link">View Project →</a>
-      </div>
-    </div>
-    <div class="project-card fade-up">
-      <div class="project-thumb">❤️</div>
-      <div class="project-body">
-        <div class="project-tag">Healthcare & Safety</div>
-        <h3>Smart Ecosystem Integration</h3>
-        <p>Real-time health monitoring via ECG signal research, integrated home automation, and an emergency alert feature for absolute user independence.</p>
-        <a href="#" class="project-link">View Project →</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="roadmap">
-  <div class="section-eyebrow">Our Journey</div>
-  <div class="section-title">TEAM ROADMAP</div>
-  <div class="roadmap-track">
-    <div class="roadmap-item fade-up">
-      <div class="road-content">
-        <div class="road-year">2022</div>
-        <h3>Team Formation</h3>
-        <p>Team CARE was founded by a group of passionate engineering students with a vision to make assistive technology affordable and accessible in Bangladesh.</p>
-        <span class="road-status status-done">Completed</span>
-      </div>
-      <div class="road-dot done"></div>
-      <div style="flex:1"></div>
-    </div>
-    <div class="roadmap-item fade-up">
-      <div style="flex:1"></div>
-      <div class="road-dot done"></div>
-      <div class="road-content">
-        <div class="road-year">Early 2023</div>
-        <h3>First Prototype — CARE Wheelchair v1.0</h3>
-        <p>Built and tested the first functional prototype of the CARE Wheelchair with basic IoT features and manual controls.</p>
-        <span class="road-status status-done">Completed</span>
-      </div>
-    </div>
-    <div class="roadmap-item fade-up">
-      <div class="road-content">
-        <div class="road-year">Late 2023</div>
-        <h3>Awards & Recognition</h3>
-        <p>Won multiple national competitions, published our first IEEE paper, and received the Bangladesh ICT Ministry innovation grant.</p>
-        <span class="road-status status-done">Completed</span>
-      </div>
-      <div class="road-dot done"></div>
-      <div style="flex:1"></div>
-    </div>
-    <div class="roadmap-item fade-up">
-      <div style="flex:1"></div>
-      <div class="road-dot active"></div>
-      <div class="road-content">
-        <div class="road-year">2024 — Now</div>
-        <h3>CARE Wheelchair v2.0 + AI Integration</h3>
-        <p>Launched v2.0 with full AI obstacle detection, voice control, and IoT dashboard. Representing Bangladesh internationally.</p>
-        <span class="road-status status-active">In Progress</span>
-      </div>
-    </div>
-    <div class="roadmap-item fade-up">
-      <div class="road-content">
-        <div class="road-year">2025</div>
-        <h3>Production & Market Launch</h3>
-        <p>Scaling manufacturing, partnering with hospitals and NGOs, and launching affordable versions of the CARE Wheelchair for nationwide distribution.</p>
-        <span class="road-status status-future">Upcoming</span>
-      </div>
-      <div class="road-dot future"></div>
-      <div style="flex:1"></div>
-    </div>
-    <div class="roadmap-item fade-up">
-      <div style="flex:1"></div>
-      <div class="road-dot future"></div>
-      <div class="road-content">
-        <div class="road-year">2026+</div>
-        <h3>Global Expansion & New Products</h3>
-        <p>Expanding to Southeast Asian markets, launching the Assistive Arm Brace commercially, and establishing the CARE Research Lab.</p>
-        <span class="road-status status-future">Vision</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="gallery">
-  <div class="section-eyebrow">Behind The Scenes</div>
-  <div class="section-title">OUR GALLERY</div>
-  <div class="gallery-filter">
-    <button class="filter-btn active" onclick="filterGallery('all',this)">All</button>
-    <button class="filter-btn" onclick="filterGallery('events',this)">Events</button>
-    <button class="filter-btn" onclick="filterGallery('lab',this)">Lab Work</button>
-    <button class="filter-btn" onclick="filterGallery('team',this)">Team</button>
-    <button class="filter-btn" onclick="filterGallery('awards',this)">Awards</button>
-  </div>
-  <div class="gallery-grid" id="galleryGrid">
-    <div class="gallery-item wide" data-cat="team" onclick="openLightbox('👥','Team CARE at ROBOFEST 2024','Our full team after winning the 1st place trophy at the national ROBOFEST 2024 competition.')">
-      <div class="gallery-inner">👥</div>
-      <div class="gallery-overlay"><h4>Team Photo</h4><p>ROBOFEST 2024</p></div>
-    </div>
-    <div class="gallery-item" data-cat="lab" onclick="openLightbox('🔧','Wheelchair Assembly Lab','Engineers working on the CARE Wheelchair v2.0 chassis and electronics in our campus lab.')">
-      <div class="gallery-inner">🔧</div>
-      <div class="gallery-overlay"><h4>Lab Session</h4><p>Wheelchair Build</p></div>
-    </div>
-    <div class="gallery-item tall" data-cat="awards" onclick="openLightbox('🏆','1st Place Trophy','Team CARE receives the national 1st place trophy at ROBOFEST 2024.')">
-      <div class="gallery-inner">🏆</div>
-      <div class="gallery-overlay"><h4>Award Ceremony</h4><p>ROBOFEST 2024</p></div>
-    </div>
-    <div class="gallery-item" data-cat="events" onclick="openLightbox('🌏','Asian Robotics Forum','Our team representing Bangladesh at the Asian Robotics Forum 2024.')">
-      <div class="gallery-inner">🌏</div>
-      <div class="gallery-overlay"><h4>Asian Robotics Forum</h4><p>International Event</p></div>
-    </div>
-    <div class="gallery-item" data-cat="lab" onclick="openLightbox('💻','AI Development','Programming and testing the AI obstacle detection module for CARE Wheelchair v2.0.')">
-      <div class="gallery-inner">💻</div>
-      <div class="gallery-overlay"><h4>AI Development</h4><p>Software Lab</p></div>
-    </div>
-    <div class="gallery-item" data-cat="events" onclick="openLightbox('📺','National TV Feature','Team CARE featured on national television showcasing our CARE Wheelchair innovation.')">
-      <div class="gallery-inner">📺</div>
-      <div class="gallery-overlay"><h4>TV Feature</h4><p>National Coverage</p></div>
-    </div>
-    <div class="gallery-item wide" data-cat="events" onclick="openLightbox('♿','CARE Wheelchair Demo','Live demonstration of CARE Wheelchair v2.0 at the national innovation expo.')">
-      <div class="gallery-inner">♿</div>
-      <div class="gallery-overlay"><h4>Wheelchair Demo Day</h4><p>Innovation Expo</p></div>
-    </div>
-    <div class="gallery-item" data-cat="team" onclick="openLightbox('🎓','Research Presentation','Team members presenting research findings at the IEEE Student Conference 2023.')">
-      <div class="gallery-inner">🎓</div>
-      <div class="gallery-overlay"><h4>IEEE Conference</h4><p>Research Paper</p></div>
-    </div>
-  </div>
-</section>
-
-<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
-  <div class="lightbox-inner">
-    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-    <span class="lightbox-emoji" id="lbEmoji">🏆</span>
-    <h3 id="lbTitle">Title</h3>
-    <p id="lbDesc">Description</p>
-  </div>
-</div>
-
-<section id="team">
-  <div class="section-eyebrow">The People</div>
-  <div class="section-title">MEET THE TEAM</div>
-  <div class="team-grid">
-    <div class="member-card fade-up">
-      <div class="member-avatar">👨‍💻</div>
-      <h4>Team Lead</h4>
-      <p class="role">Founder & Lead</p>
-      <div class="member-socials">
-        <a href="#" title="LinkedIn">in</a>
-        <a href="#" title="Facebook">f</a>
-      </div>
-    </div>
-    <div class="member-card fade-up">
-      <div class="member-avatar">👨‍🔬</div>
-      <h4>Research Head</h4>
-      <p class="role">R&D Division</p>
-      <div class="member-socials">
-        <a href="#" title="LinkedIn">in</a>
-        <a href="#" title="Facebook">f</a>
-      </div>
-    </div>
-    <div class="member-card fade-up">
-      <div class="member-avatar">👩‍💻</div>
-      <h4>Software Lead</h4>
-      <p class="role">AI / ML Engineer</p>
-      <div class="member-socials">
-        <a href="#" title="LinkedIn">in</a>
-        <a href="#" title="GitHub">⌥</a>
-      </div>
-    </div>
-    <div class="member-card fade-up">
-      <div class="member-avatar">👨‍🔧</div>
-      <h4>Hardware Lead</h4>
-      <p class="role">Electronics & IoT</p>
-      <div class="member-socials">
-        <a href="#" title="LinkedIn">in</a>
-        <a href="#" title="Facebook">f</a>
-      </div>
-    </div>
-    <div class="member-card fade-up">
-      <div class="member-avatar">👩‍🎨</div>
-      <h4>Design Lead</h4>
-      <p class="role">UX / Mechanical</p>
-      <div class="member-socials">
-        <a href="#" title="LinkedIn">in</a>
-        <a href="#" title="Facebook">f</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="recent">
-  <div class="news-header">
+<!-- ═══ RECENT NEWS (homepage inline) ═══ -->
+<section id="recent-home" style="background:var(--bg2);border-top:1px solid var(--border);">
+  <div class="section-eyebrow">Latest Updates</div>
+  <div class="section-title tagline-reveal">RECENT <span style="color:var(--blue)">NEWS</span></div>
+  <div class="news-header" style="max-width:1200px;margin:0 auto 40px;">
     <div class="news-header-left">
-      <div class="section-eyebrow" style="text-align:left">Latest News</div>
-      <div class="section-title" style="text-align:left;margin-bottom:0">RECENT UPDATES</div>
+      <div class="section-eyebrow" style="text-align:left;margin:0 0 4px">What's Happening</div>
     </div>
-    <a href="#" class="view-all">View All</a>
+    <a href="javascript:void(0)" onclick="openPage('recent')" class="view-all">View All →</a>
   </div>
-  <div class="news-grid">
+  <div class="news-grid" style="max-width:1200px;margin:0 auto;">
     <div class="news-card fade-up">
       <div class="news-thumb">🏆</div>
       <div class="news-body">
-        <div class="news-date">Oct 18, 2025</div>
-        <h4>Champion at Bangladesh ICT & Innovation Award</h4>
-        <a href="#" class="news-arrow">→</a>
+        <div class="news-date">May 2025</div>
+        <h4>Champions at 16th DRMC Science Carnival 2025</h4>
+        <a href="https://www.facebook.com/teamcare.bd" target="_blank" class="news-arrow">→</a>
       </div>
     </div>
     <div class="news-card fade-up">
-      <div class="news-thumb">🌍</div>
+      <div class="news-thumb">🌏</div>
       <div class="news-body">
-        <div class="news-date">Dec 01, 2025</div>
-        <h4>APICTA Awards 2025 Winner in Taiwan</h4>
-        <a href="#" class="news-arrow">→</a>
+        <div class="news-date">2025</div>
+        <h4>APICTA Awards — International Recognition for C.A.R.E Wheelchair</h4>
+        <a href="https://www.facebook.com/teamcare.bd" target="_blank" class="news-arrow">→</a>
       </div>
     </div>
     <div class="news-card fade-up">
-      <div class="news-thumb">🏅</div>
+      <div class="news-thumb">🤖</div>
       <div class="news-body">
-        <div class="news-date">May 03, 2025</div>
-        <h4>Champion at 16th DRMC Science Carnival</h4>
-        <a href="#" class="news-arrow">→</a>
+        <div class="news-date">2025</div>
+        <h4>National Champion — Robo Display at TECHNOVATION-25</h4>
+        <a href="https://www.facebook.com/teamcare.bd" target="_blank" class="news-arrow">→</a>
       </div>
     </div>
     <div class="news-card fade-up">
-      <div class="news-thumb">✈️</div>
+      <div class="news-thumb">⚡</div>
       <div class="news-body">
-        <div class="news-date">Sept 20, 2026</div>
-        <h4>Team Represents Bangladesh at WICE Malaysia</h4>
-        <a href="#" class="news-arrow">→</a>
+        <div class="news-date">2026</div>
+        <h4>C.A.R.E Wheelchair V2.0 — AI Integration Complete</h4>
+        <a href="https://www.facebook.com/teamcare.bd" target="_blank" class="news-arrow">→</a>
       </div>
     </div>
   </div>
 </section>
 
-<section id="contact">
-  <div class="section-eyebrow">Get In Touch</div>
-  <div class="section-title">CONTACT US</div>
-  <div class="contact-grid">
-    <div class="fade-up">
-      <h3>LET'S WORK TOGETHER</h3>
-      <p>Want to collaborate, sponsor our research, or join the team? We'd love to hear from you.</p>
-      <div class="contact-detail">
-        <div class="contact-icon">📧</div>
-        <div class="contact-detail-text"><strong>Email</strong><span>teamcare.bd@gmail.com</span></div>
-      </div>
-      <div class="contact-detail">
-        <div class="contact-icon">📍</div>
-        <div class="contact-detail-text"><strong>Location</strong><span>Bangladesh</span></div>
-      </div>
-      <div class="contact-detail">
-        <div class="contact-icon">📱</div>
-        <div class="contact-detail-text"><strong>Social Media</strong><span>@teamcare.bd</span></div>
-      </div>
-    </div>
-    <div class="fade-up">
-      <div class="contact-form">
-        <div class="form-row">
-          <div class="form-group"><label>Your Name</label><input type="text" placeholder="Full Name"></div>
-          <div class="form-group"><label>Email</label><input type="email" placeholder="your@email.com"></div>
-        </div>
-        <div class="form-group">
-          <label>Purpose</label>
-          <select>
-            <option>Collaboration</option>
-            <option>Join Team</option>
-            <option>Sponsorship</option>
-            <option>Media / Press</option>
-            <option>General Inquiry</option>
-          </select>
-        </div>
-        <div class="form-group"><label>Subject</label><input type="text" placeholder="What's this about?"></div>
-        <div class="form-group"><label>Message</label><textarea rows="5" placeholder="Tell us about yourself or your idea..."></textarea></div>
-        <button class="btn-primary" style="width:100%;justify-content:center;font-size:15px;">Send Message →</button>
-      </div>
-    </div>
-  </div>
-</section>
-
+<!-- ═══ FOOTER ═══ -->
 <footer>
   <div class="footer-main">
     <div class="footer-brand fade-up">
@@ -916,41 +2193,29 @@ footer{background:var(--bg);border-top:1px solid var(--border);padding:70px 60px
       <div class="footer-sub">Research Team · Bangladesh</div>
       <p>Developing affordable assistive technologies to empower independence and improve the lives of people with disabilities across Bangladesh and beyond.</p>
       <div class="social-links">
-        <a href="https://facebook.com/teamcare.bd" target="_blank" class="social-link" title="Facebook">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
-        </a>
-        <a href="https://instagram.com/teamcare.bd" target="_blank" class="social-link" title="Instagram">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
-        </a>
-        <a href="https://youtube.com/@teamcare" target="_blank" class="social-link" title="YouTube">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 00-1.95 1.96A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.4a2.78 2.78 0 001.95-1.95A29 29 0 0023 12a29 29 0 00-.46-5.58zM10 15.5v-7l6 3.5-6 3.5z"/></svg>
-        </a>
-        <a href="https://linkedin.com/company/teamcare-bd" target="_blank" class="social-link" title="LinkedIn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
-        </a>
-        <a href="https://twitter.com/teamcare_bd" target="_blank" class="social-link" title="Twitter / X">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-        </a>
-        <a href="https://github.com/teamcare-bd" target="_blank" class="social-link" title="GitHub">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>
-        </a>
+        <a href="https://facebook.com/teamcare.bd" target="_blank" class="social-link" title="Facebook"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>
+        <a href="https://instagram.com/teamcare.bd" target="_blank" class="social-link" title="Instagram"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+        <a href="https://youtube.com/@teamcare" target="_blank" class="social-link" title="YouTube"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 00-1.95 1.96A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.4a2.78 2.78 0 001.95-1.95A29 29 0 0023 12a29 29 0 00-.46-5.58zM10 15.5v-7l6 3.5-6 3.5z"/></svg></a>
+        <a href="https://linkedin.com/company/teamcare-bd" target="_blank" class="social-link" title="LinkedIn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg></a>
+        <a href="https://twitter.com/teamcare_bd" target="_blank" class="social-link" title="Twitter / X"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+        <a href="https://github.com/teamcare-bd" target="_blank" class="social-link" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg></a>
       </div>
     </div>
     <div class="footer-col fade-up">
       <h5>Navigate</h5>
       <a href="#hero">Home</a>
       <a href="#about">About Us</a>
-      <a href="#achievements">Achievements</a>
-      <a href="#projects">Projects</a>
-      <a href="#roadmap">Roadmap</a>
+      <a href="javascript:void(0)" onclick="openPage('achievements')">Achievements</a>
+      <a href="javascript:void(0)" onclick="openPage('projects')">Projects</a>
+      <a href="javascript:void(0)" onclick="openPage('roadmap')">Roadmap</a>
     </div>
     <div class="footer-col fade-up">
       <h5>Explore</h5>
-      <a href="#gallery">Gallery</a>
-      <a href="#team">Our Team</a>
-      <a href="#recent">Recent News</a>
-      <a href="#contact">Contact</a>
-      <a href="#contact">Join Us</a>
+      <a href="javascript:void(0)" onclick="openPage('gallery')">Gallery</a>
+      <a href="javascript:void(0)" onclick="openPage('team')">Our Team</a>
+      <a href="javascript:void(0)" onclick="openPage('recent')">Recent News</a>
+      <a href="javascript:void(0)" onclick="openPage('contact')">Contact</a>
+      <a href="javascript:void(0)" onclick="openPage('contact')">Join Us</a>
     </div>
     <div class="footer-col fade-up">
       <h5>Connect</h5>
@@ -963,74 +2228,416 @@ footer{background:var(--bg);border-top:1px solid var(--border);padding:70px 60px
   </div>
   <div class="footer-divider"></div>
   <div class="footer-bottom">
-    <div class="footer-copy">© 2024 Team C.A.R.E. Research Team · All rights reserved · Technology For Humanity</div>
-    <div class="footer-dev">Developed with ❤️ by <span>DEBOJIT</span></div>
+    <div class="footer-copy">© 2026 Team C.A.R.E · Last updated: May 2026 · All rights reserved · Technology For Humanity</div>
+    <div class="footer-dev">Developed by <span>DEBOJIT &amp; EFTY</span></div>
   </div>
 </footer>
 
 <script>
-/* ── STARS ── */
+/* ══════════════════════════════════════════════
+   WELCOME POPUP
+══════════════════════════════════════════════ */
+function closeWelcome(){
+  const p = document.getElementById('welcome-popup');
+  p.classList.add('hide');
+  setTimeout(() => p.remove(), 600);
+}
+// Also close on background click
+document.getElementById('welcome-popup').addEventListener('click', function(e){
+  if(e.target === this) closeWelcome();
+});
+
+/* ══════════════════════════════════════════════
+   CUSTOM CURSOR — smooth magnetic
+══════════════════════════════════════════════ */
+const ring = document.getElementById('cursor-ring');
+const dot = document.getElementById('cursor-dot');
+let mx=0,my=0,rx=0,ry=0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+});
+document.addEventListener('mousedown', () => document.body.classList.add('cursor-click'));
+document.addEventListener('mouseup', () => document.body.classList.remove('cursor-click'));
+
+function animCursor(){
+  rx += (mx - rx) * 0.10;
+  ry += (my - ry) * 0.10;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(animCursor);
+}
+animCursor();
+
+document.querySelectorAll('a,button,.card,.achieve-card,.member-card,.gallery-item,.hero-nav-chip,.filter-btn,.news-card,.project-card,.roadmap-item').forEach(el => {
+  el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+  el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+});
+
+/* ══════════════════════════════════════════════
+   THEME TOGGLE
+══════════════════════════════════════════════ */
+function toggleTheme(){
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  localStorage.setItem('care-theme', isDark ? 'light' : 'dark');
+}
+const saved = localStorage.getItem('care-theme');
+if(saved) document.documentElement.setAttribute('data-theme', saved);
+
+/* ══════════════════════════════════════════════
+   PAGE OVERLAY SYSTEM
+══════════════════════════════════════════════ */
+function openPage(id){
+  const overlay = document.getElementById('page-' + id);
+  if(!overlay) return;
+  // create page title reveal
+  const titleBar = overlay.querySelector('.page-back-title');
+  if(titleBar){
+    const pageName = titleBar.textContent.trim();
+    // inject reveal overlay
+    let revealEl = overlay.querySelector('.page-reveal-anim');
+    if(!revealEl){
+      revealEl = document.createElement('div');
+      revealEl.className = 'page-reveal-anim';
+      revealEl.innerHTML = '<span class="pra-text">' + pageName + '</span>';
+      overlay.appendChild(revealEl);
+    }
+    revealEl.querySelector('.pra-text').textContent = pageName;
+    revealEl.classList.remove('pra-done');
+    revealEl.style.display = 'flex';
+    void revealEl.offsetWidth;
+    revealEl.classList.add('pra-show');
+    setTimeout(() => revealEl.classList.add('pra-fadeup'), 600);
+    setTimeout(() => { revealEl.classList.add('pra-done'); revealEl.style.display='none'; }, 1400);
+  }
+  overlay.classList.add('active');
+  overlay.scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => {
+    overlay.querySelectorAll('.fade-up').forEach((el,i) => {
+      setTimeout(() => el.classList.add('visible'), i * 60);
+    });
+    // Trigger care wheelchair features if projects page
+    if(id === 'projects'){
+      const careItems = overlay.querySelectorAll('.care-wc-left .care-feat-item, .care-wc-right .care-feat-item');
+      const leftItems = overlay.querySelectorAll('.care-wc-left .care-feat-item');
+      const rightItems = overlay.querySelectorAll('.care-wc-right .care-feat-item');
+      leftItems.forEach((el,i) => { el.classList.remove('visible'); setTimeout(()=>el.classList.add('visible'), 400 + i*110); });
+      rightItems.forEach((el,i) => { el.classList.remove('visible'); setTimeout(()=>el.classList.add('visible'), 500 + i*110); });
+    }
+  }, 50);
+}
+function closePage(id){
+  const overlay = document.getElementById('page-' + id);
+  if(!overlay) return;
+  overlay.classList.remove('active');
+  document.body.style.overflow = '';
+  overlay.querySelectorAll('.fade-up').forEach(el => el.classList.remove('visible'));
+}
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){
+    document.querySelectorAll('.page-overlay.active').forEach(o => {
+      closePage(o.id.replace('page-',''));
+    });
+  }
+});
+
+
+/* ══════════════════════════════════════════════
+   HERO BG CANVAS — elegant geometric animation
+══════════════════════════════════════════════ */
 (function(){
-  const canvas = document.getElementById('starCanvas');
+  /* ── Full-hero background canvas ── */
+  const bgC = document.getElementById('heroBgCanvas');
+  if(bgC){
+    const bgCtx = bgC.getContext('2d');
+    let bW, bH, lines=[], rings=[], orbs=[];
+
+    function bgResize(){
+      bW = bgC.parentElement.offsetWidth;
+      bH = bgC.parentElement.offsetHeight;
+      bgC.width = bW; bgC.height = bH;
+      initBg();
+    }
+
+    function initBg(){
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+
+      // Slow-drifting diagonal lines
+      lines = [];
+      for(let i=0;i<14;i++){
+        lines.push({
+          x: Math.random()*bW*1.5 - bW*0.25,
+          y: Math.random()*bH*1.5 - bH*0.25,
+          angle: -0.52 + (Math.random()-0.5)*0.2,
+          len: 80 + Math.random()*220,
+          speed: 0.12 + Math.random()*0.18,
+          alpha: 0.04 + Math.random()*0.08,
+          width: 0.6 + Math.random()*0.8
+        });
+      }
+
+      // Expanding rings (concentric pulse)
+      rings = [];
+      for(let i=0;i<4;i++){
+        rings.push({
+          x: bW * (0.55 + Math.random()*0.4),
+          y: bH * (0.2 + Math.random()*0.6),
+          r: 40 + Math.random()*80,
+          maxR: 200 + Math.random()*200,
+          speed: 0.4 + Math.random()*0.5,
+          alpha: 0.06 + Math.random()*0.06,
+          delay: i * 60
+        });
+      }
+
+      // Large blurred orbs
+      orbs = [
+        { x: bW*0.72, y: bH*0.35, r: 260, color: isDark?'41,121,255':'41,100,200', a: isDark?0.055:0.04, vx:0.08, vy:0.05 },
+        { x: bW*0.88, y: bH*0.65, r: 180, color: isDark?'0,180,255':'0,130,200',   a: isDark?0.04:0.03,  vx:-0.06, vy:0.07 },
+        { x: bW*0.62, y: bH*0.7,  r: 140, color: isDark?'100,60,255':'80,50,200',  a: isDark?0.03:0.02,  vx:0.05, vy:-0.06 },
+      ];
+    }
+
+    let ringFrame = 0;
+    function drawBg(){
+      bgCtx.clearRect(0,0,bW,bH);
+      ringFrame++;
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+
+      // Draw soft orbs (blurred radial glow)
+      orbs.forEach(o => {
+        o.x += o.vx; o.y += o.vy;
+        if(o.x < bW*0.4 || o.x > bW*1.05) o.vx *= -1;
+        if(o.y < -50 || o.y > bH+50) o.vy *= -1;
+        const g = bgCtx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r);
+        g.addColorStop(0, `rgba(${o.color},${o.a})`);
+        g.addColorStop(0.5, `rgba(${o.color},${o.a*0.4})`);
+        g.addColorStop(1, 'transparent');
+        bgCtx.fillStyle = g;
+        bgCtx.beginPath(); bgCtx.arc(o.x,o.y,o.r,0,Math.PI*2); bgCtx.fill();
+      });
+
+      // Draw diagonal lines drifting slowly downward
+      lines.forEach(l => {
+        l.y += l.speed * 0.3;
+        l.x += l.speed * 0.15;
+        if(l.y > bH + 200) { l.y = -200; l.x = Math.random()*bW*1.5 - bW*0.25; }
+        const ex = l.x + Math.cos(l.angle)*l.len;
+        const ey = l.y + Math.sin(l.angle)*l.len;
+        const alpha = isDark ? l.alpha : l.alpha * 0.6;
+        const col = isDark ? `41,121,255` : `26,80,180`;
+        bgCtx.strokeStyle = `rgba(${col},${alpha})`;
+        bgCtx.lineWidth = l.width;
+        bgCtx.beginPath(); bgCtx.moveTo(l.x, l.y); bgCtx.lineTo(ex, ey); bgCtx.stroke();
+      });
+
+      // Draw expanding ring pulses
+      rings.forEach(rg => {
+        if(ringFrame < rg.delay) return;
+        rg.r += rg.speed;
+        if(rg.r > rg.maxR) rg.r = 20;
+        const prog = rg.r / rg.maxR;
+        const a = (1 - prog) * rg.alpha * (isDark ? 1 : 0.6);
+        bgCtx.strokeStyle = `rgba(41,121,255,${a})`;
+        bgCtx.lineWidth = 1;
+        bgCtx.beginPath(); bgCtx.arc(rg.x, rg.y, rg.r, 0, Math.PI*2); bgCtx.stroke();
+      });
+
+      requestAnimationFrame(drawBg);
+    }
+
+    bgResize(); drawBg();
+    window.addEventListener('resize', bgResize);
+    // Re-init on theme change
+    document.getElementById('themeToggle')?.addEventListener('click', ()=> setTimeout(initBg, 50));
+  }
+
+  /* ── Right-side abstract canvas (neural nodes, smaller area) ── */
+  const canvas = document.getElementById('heroAbstractCanvas');
+  if(!canvas) return;
   const ctx = canvas.getContext('2d');
-  let stars = [];
-  function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
-  function initStars(){
-    stars=[];
-    for(let i=0;i<180;i++){
-      stars.push({
-        x:Math.random()*canvas.width,
-        y:Math.random()*canvas.height,
-        r:Math.random()*1.5+0.3,
-        alpha:Math.random(),
-        speed:Math.random()*0.008+0.003,
-        dir:Math.random()>0.5?1:-1
+  let W, H, nodes=[];
+
+  function resize(){
+    W = canvas.offsetWidth; H = canvas.offsetHeight;
+    canvas.width = W; canvas.height = H;
+    initNodes();
+  }
+
+  function initNodes(){
+    nodes = [];
+    const count = Math.min(Math.floor((W*H)/8000), 42);
+    for(let i=0;i<count;i++){
+      nodes.push({
+        x: Math.random()*W, y: Math.random()*H,
+        vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3,
+        r: Math.random()*2 + 0.8,
+        pulse: Math.random()*Math.PI*2,
+        pulseSpeed: 0.018 + Math.random()*0.025,
+        hub: Math.random() < 0.12
       });
     }
   }
-  function drawStars(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    stars.forEach(s=>{
-      s.alpha+=s.speed*s.dir;
-      if(s.alpha>0.9||s.alpha<0.05)s.dir*=-1;
-      ctx.beginPath();
-      ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(255,255,255,${s.alpha})`;
-      ctx.fill();
+
+  let packets=[];
+  setInterval(()=>{
+    if(nodes.length<2) return;
+    const fi = Math.floor(Math.random()*nodes.length);
+    let best=-1, bd=9999;
+    nodes.forEach((n,j)=>{ if(j===fi) return; const d=Math.hypot(n.x-nodes[fi].x,n.y-nodes[fi].y); if(d<150&&d<bd){bd=d;best=j;} });
+    if(best>-1) packets.push({from:fi,to:best,p:0,sp:0.007+Math.random()*0.01});
+  }, 600);
+
+  function drawNodes(){
+    ctx.clearRect(0,0,W,H);
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    const cB = isDark?[41,121,255]:[26,95,212];
+    const cE = isDark?[0,200,255]:[0,110,190];
+
+    nodes.forEach((n,i)=>{
+      n.x+=n.vx; n.y+=n.vy;
+      if(n.x<0||n.x>W) n.vx*=-1;
+      if(n.y<0||n.y>H) n.vy*=-1;
+      n.pulse+=n.pulseSpeed;
+      nodes.forEach((m,j)=>{
+        if(j<=i) return;
+        const d=Math.hypot(n.x-m.x,n.y-m.y);
+        if(d<130){
+          const a=(1-d/130)*(isDark?0.15:0.1);
+          const [r,g,b]=(n.hub||m.hub)?cE:cB;
+          ctx.strokeStyle=`rgba(${r},${g},${b},${a})`;
+          ctx.lineWidth=(n.hub||m.hub)?1:0.6;
+          ctx.beginPath(); ctx.moveTo(n.x,n.y); ctx.lineTo(m.x,m.y); ctx.stroke();
+        }
+      });
     });
-    requestAnimationFrame(drawStars);
+
+    packets=packets.filter(pk=>pk.p<=1);
+    packets.forEach(pk=>{
+      pk.p+=pk.sp;
+      const fx=nodes[pk.from].x,fy=nodes[pk.from].y;
+      const tx=nodes[pk.to].x,ty=nodes[pk.to].y;
+      const px=fx+(tx-fx)*pk.p, py=fy+(ty-fy)*pk.p;
+      const [r,g,b]=cE;
+      const a=Math.sin(pk.p*Math.PI)*(isDark?0.85:0.65);
+      ctx.beginPath(); ctx.arc(px,py,2.2,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${r},${g},${b},${a})`; ctx.fill();
+    });
+
+    nodes.forEach(n=>{
+      const [r,g,b]=n.hub?cE:cB;
+      const pr=n.r+Math.sin(n.pulse)*0.7;
+      const a=isDark?(0.55+Math.sin(n.pulse)*0.25):(0.45+Math.sin(n.pulse)*0.18);
+      const g2=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,pr*5);
+      g2.addColorStop(0,`rgba(${r},${g},${b},${isDark?0.22:0.13})`);
+      g2.addColorStop(1,'transparent');
+      ctx.fillStyle=g2; ctx.beginPath(); ctx.arc(n.x,n.y,pr*5,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(n.x,n.y,pr,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${r},${g},${b},${a})`; ctx.fill();
+    });
+
+    requestAnimationFrame(drawNodes);
   }
-  resize();initStars();drawStars();
-  window.addEventListener('resize',()=>{resize();initStars();});
+
+  resize(); drawNodes();
+  window.addEventListener('resize', resize);
 })();
 
-/* ── SCROLL ANIMATIONS ── */
+/* ══════════════════════════════════════════════
+   CARE WHEELCHAIR FEATURES — intersection observer
+══════════════════════════════════════════════ */
+(function(){
+  const layout = document.getElementById('careWcLayout');
+  if(!layout) return;
+  const featObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if(e.isIntersecting){
+        const leftItems = layout.querySelectorAll('.care-wc-left .care-feat-item');
+        const rightItems = layout.querySelectorAll('.care-wc-right .care-feat-item');
+        leftItems.forEach((el,i) => setTimeout(()=>el.classList.add('visible'), i*100));
+        rightItems.forEach((el,i) => setTimeout(()=>el.classList.add('visible'), i*100+200));
+        featObs.unobserve(e.target);
+      }
+    });
+  }, {threshold:0.2});
+  featObs.observe(layout);
+  // Also trigger when projects page opens
+  const origOpen = window.openPage;
+  // handled via openPage already
+})();
+
+/* star canvas JS removed */
+
+/* Wheelchair canvas removed — abstract hero used instead */
+
+/* ══════════════════════════════════════════════
+   SCROLL REVEAL — taglines float up word by word
+══════════════════════════════════════════════ */
+const taglineObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      e.target.classList.add('revealed');
+      // add delay per word
+      e.target.querySelectorAll('.tag-word').forEach((w,i) => {
+        w.style.transitionDelay = (i*0.12)+'s';
+      });
+      taglineObs.unobserve(e.target);
+    }
+  });
+}, {threshold:0.2});
+document.querySelectorAll('.tagline-reveal').forEach(el => {
+  // wrap each word if not already done
+  if(!el.querySelector('.tag-word')){
+    const words = el.textContent.trim().split(/\s+/);
+    el.innerHTML = words.map(w=>`<span class="tag-word">${w}</span>`).join(' ');
+  }
+  taglineObs.observe(el);
+});
+
+/* ══════════════════════════════════════════════
+   ROADMAP — letter shimmer titles
+══════════════════════════════════════════════ */
+document.querySelectorAll('.road-letter-title').forEach(h => {
+  const text = h.textContent;
+  h.innerHTML = text.split('').map(c => c===' '?'&nbsp;':`<span class="letter">${c}</span>`).join('');
+});
+
+/* ══════════════════════════════════════════════
+   SCROLL ANIMATIONS
+══════════════════════════════════════════════ */
 const obs = new IntersectionObserver((entries)=>{
   entries.forEach((e,i)=>{
-    if(e.isIntersecting) setTimeout(()=>e.target.classList.add('visible'),i*80);
+    if(e.isIntersecting) setTimeout(()=>e.target.classList.add('visible'), i*80);
   });
 },{threshold:0.08});
-document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
+document.querySelectorAll('body > section .fade-up, footer .fade-up').forEach(el=>obs.observe(el));
 
-/* ── ACTIVE NAV ── */
-const sections=document.querySelectorAll('section[id]');
-const navLinks=document.querySelectorAll('.nav-links a');
+/* ══════════════════════════════════════════════
+   ACTIVE NAV
+══════════════════════════════════════════════ */
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
 window.addEventListener('scroll',()=>{
   let cur='';
-  sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)cur=s.id;});
+  sections.forEach(s=>{ if(window.scrollY>=s.offsetTop-120) cur=s.id; });
   navLinks.forEach(a=>{
     a.classList.remove('active');
-    if(a.getAttribute('href')==='#'+cur)a.classList.add('active');
+    if(a.getAttribute('href')==='#'+cur) a.classList.add('active');
   });
 });
 
-/* ── STAT COUNTER ── */
+/* ══════════════════════════════════════════════
+   STAT COUNTER
+══════════════════════════════════════════════ */
 function animateCount(el,target,plus){
-  let c=0;const step=target/60;
+  let c=0; const step=target/60;
   const t=setInterval(()=>{
     c=Math.min(c+step,target);
     el.textContent=Math.floor(c)+(plus?'+':'');
-    if(c>=target)clearInterval(t);
+    if(c>=target) clearInterval(t);
   },22);
 }
 const statObs=new IntersectionObserver((entries)=>{
@@ -1046,22 +2653,22 @@ const statObs=new IntersectionObserver((entries)=>{
   });
 },{threshold:0.5});
 const statsSection=document.getElementById('stats');
-if(statsSection)statObs.observe(statsSection);
+if(statsSection) statObs.observe(statsSection);
 
-/* ── GALLERY FILTER ── */
+/* ══════════════════════════════════════════════
+   GALLERY FILTER
+══════════════════════════════════════════════ */
 function filterGallery(cat,btn){
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   document.querySelectorAll('.gallery-item').forEach(item=>{
-    if(cat==='all'||item.dataset.cat===cat){
-      item.style.display='block';
-    } else {
-      item.style.display='none';
-    }
+    item.style.display = (cat==='all'||item.dataset.cat===cat) ? 'block' : 'none';
   });
 }
 
-/* ── LIGHTBOX ── */
+/* ══════════════════════════════════════════════
+   LIGHTBOX
+══════════════════════════════════════════════ */
 function openLightbox(emoji,title,desc){
   document.getElementById('lbEmoji').textContent=emoji;
   document.getElementById('lbTitle').textContent=title;
@@ -1074,9 +2681,11 @@ function closeLightbox(e){
   }
 }
 
-/* ── MOBILE MENU ── */
-function toggleMobile(){document.getElementById('mobileMenu').classList.toggle('open');}
-function closeMobile(){document.getElementById('mobileMenu').classList.remove('open');}
+/* ══════════════════════════════════════════════
+   MOBILE MENU
+══════════════════════════════════════════════ */
+function toggleMobile(){ document.getElementById('mobileMenu').classList.toggle('open'); }
+function closeMobile(){ document.getElementById('mobileMenu').classList.remove('open'); }
 </script>
 </body>
 </html>
