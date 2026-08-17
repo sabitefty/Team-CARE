@@ -1,0 +1,2943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>VoiceEye — Gaze-Controlled Communication</title>
+<style>
+:root {
+  --bg-deep: #06080f;
+  --bg-panel: #0d1220;
+  --accent: #4ad8ff;
+  --accent-warm: #ffb35c;
+  /* Lighter-weight glow: smaller blur radius than the original (which used
+     two stacked 28px/60px shadows on dozens of simultaneously-focusable
+     elements). Visually still reads as a clear glow, but is much cheaper
+     for low-end GPUs to repaint every frame during gaze focus changes. */
+  --glow: 0 0 14px rgba(74, 216, 255, 0.8), 0 0 26px rgba(74, 216, 255, 0.3);
+  --glow-warm: 0 0 14px rgba(255, 179, 92, 0.8), 0 0 26px rgba(255, 179, 92, 0.25);
+  --glow-soft: 0 0 10px rgba(109, 255, 158, 0.55);
+  --text-main: #eaf2ff;
+  --text-dim: #7d8aa6;
+  --radius: 22px;
+  --font-display: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-deep);
+  color: var(--text-main);
+  font-family: var(--font-display);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#webcam {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  width: 120px;
+  height: 90px;
+  border-radius: 12px;
+  object-fit: cover;
+  opacity: 0.18;
+  transform: scaleX(-1);
+  pointer-events: none;
+  z-index: 5;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ---------- Gaze cursor ---------- */
+.gaze-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 40px;
+  height: 40px;
+  margin-left: -20px;
+  margin-top: -20px;
+  pointer-events: none;
+  z-index: 200;
+  display: none;
+  will-change: transform;
+}
+.gaze-cursor.active { display: block; }
+.gaze-cursor-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  animation: gaze-pulse 1.5s ease-out infinite;
+}
+.gaze-cursor-dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--accent);
+}
+.gaze-cursor.dwell .gaze-cursor-ring { border-color: var(--accent-warm); animation: none; }
+.gaze-cursor.dwell .gaze-cursor-dot { background: var(--accent-warm); box-shadow: 0 0 6px var(--accent-warm); }
+.gaze-cursor.clicked .gaze-cursor-ring { border-color: #6dff9e; }
+.gaze-cursor.clicked .gaze-cursor-dot { background: #6dff9e; box-shadow: 0 0 8px #6dff9e; }
+@keyframes gaze-pulse {
+  0%   { transform: scale(1);   opacity: 1; }
+  70%  { transform: scale(1.6); opacity: 0; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* ---------- Overlays ---------- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 50% 30%, #0b1426 0%, #04060c 70%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  transition: opacity 0.4s ease;
+}
+.overlay.hidden { display: none; }
+
+.boot-card { text-align: center; max-width: 480px; padding: 24px; }
+.logo-mark {
+  font-size: 2.4rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: linear-gradient(90deg, var(--accent), var(--accent-warm));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 10px;
+}
+#bootMessage { color: var(--text-dim); font-size: 1.05rem; margin-bottom: 22px; }
+.spinner {
+  width: 46px; height: 46px;
+  border: 4px solid rgba(74,216,255,0.18);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  margin: 0 auto;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.hidden-btn { display: none; }
+.hidden-btn.show {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 12px 28px;
+  border-radius: 14px;
+  border: none;
+  background: var(--accent);
+  color: #03131c;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* ---------- Calibration ---------- */
+.calib-instructions {
+  position: absolute;
+  top: 8%;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 1.1rem;
+  max-width: 80%;
+}
+.calib-dot {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: var(--glow);
+  transition: top 0.6s ease, left 0.6s ease, transform 0.25s ease;
+}
+.calib-dot.locking { transform: scale(1.7); background: #6dff9e; box-shadow: 0 0 30px #6dff9e; }
+.calib-progress {
+  position: absolute;
+  bottom: 8%;
+  width: 60%;
+  max-width: 420px;
+  height: 8px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 6px;
+  overflow: hidden;
+}
+#calibProgressBar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-warm));
+  transition: width 0.4s ease;
+}
+
+/* ---------- Calibration tap counter ---------- */
+.calib-tap-counter {
+  position: absolute;
+  bottom: 14%;
+  color: var(--accent-warm);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* ---------- Person-select step (before calibration) ---------- */
+#personSelectOverlay {
+  /* layout only — display is controlled by .overlay / .overlay.hidden so
+     that adding the "hidden" class always wins regardless of ID specificity */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 24px;
+}
+.person-select-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+  text-align: center;
+}
+.person-select-sub {
+  color: var(--text-dim);
+  font-size: 1rem;
+  text-align: center;
+  max-width: 90%;
+}
+.person-select-stage {
+  position: relative;
+  width: min(640px, 92vw);
+  aspect-ratio: 4 / 3;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.person-select-stage video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+.face-box {
+  position: absolute;
+  border: 3px solid var(--accent);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+  background: rgba(74, 216, 255, 0.06);
+}
+.face-box:active, .face-box.picked { border-color: #6dff9e; background: rgba(109,255,158,0.12); transform: scale(1.02); }
+.face-box-label {
+  position: absolute;
+  top: -28px;
+  left: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(6,8,15,0.85);
+  padding: 3px 9px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+.face-box.picked .face-box-label { color: #6dff9e; }
+.person-select-confirm {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.person-select-confirm.hidden { display: none; }
+.person-select-btn {
+  padding: 14px 26px;
+  border-radius: 14px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: var(--bg-panel);
+  color: var(--text-main);
+  cursor: pointer;
+}
+.person-select-btn.primary { background: var(--accent); color: #06121c; border-color: var(--accent); }
+.person-select-hint {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+/* ---------- Layout system ---------- */
+.layout {
+  position: fixed;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  padding: 18px clamp(16px, 4vw, 48px);
+}
+.layout.active-layout { display: flex; }
+
+.top-bar {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.brand { font-weight: 700; font-size: 1.4rem; color: var(--accent); }
+.subtitle { color: var(--text-dim); font-size: 1rem; }
+
+/* ---------- Generic gaze-target tile ---------- */
+.tile {
+  position: relative;
+  background: var(--bg-panel);
+  border: 1.5px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  outline: none;
+  user-select: none;
+}
+.tile-dot {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(74,216,255,0.35);
+}
+.tile-icon { font-size: 2.6rem; line-height: 1; }
+.tile-label { font-size: 1.05rem; font-weight: 600; letter-spacing: 0.01em; }
+
+.tile.gaze-focus {
+  border-color: var(--accent);
+  box-shadow: var(--glow);
+  background: #11233a;
+  transform: scale(1.045);
+}
+.tile.gaze-progress::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  border: 3px solid transparent;
+  border-top-color: #6dff9e;
+  animation: spin 0.7s linear infinite;
+}
+.tile.gaze-selected {
+  background: #16331f;
+  border-color: #6dff9e;
+  box-shadow: 0 0 30px rgba(109,255,158,0.7);
+}
+
+/* ---------- Home grid ---------- */
+.grid-home {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: clamp(12px, 2vw, 24px);
+}
+@media (max-width: 720px) {
+  .grid-home { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, 1fr); }
+  .tile-icon { font-size: 2rem; }
+}
+
+/* ---------- Keyboard layout ---------- */
+.output-box {
+  min-height: 64px;
+  background: var(--bg-panel);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 14px 20px;
+  font-size: 1.6rem;
+  letter-spacing: 0.02em;
+  margin-bottom: 14px;
+  word-break: break-word;
+  color: var(--accent-warm);
+}
+/* Each physical keyboard row is its own CSS grid row, so letters line up
+   the way a real keyboard does (staggered, easy to scan) instead of being
+   poured left-to-right into one big undifferentiated block. This is the
+   same structural idea as the member-list rows: clear, evenly-sized,
+   predictable targets, which matters a lot for gaze accuracy. */
+.keyboard-grid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+.kb-row {
+  flex: 1;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 7px;
+  min-height: 0;
+}
+.kb-row.kb-row-actions { flex: 0 0 16%; }
+.key {
+  background: var(--bg-panel);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+}
+.key.key-wide { grid-column: span 2; }
+.key.key-speak { grid-column: span 3; }
+.key.key-action { color: var(--accent-warm); font-size: 0.95rem; font-weight: 700; letter-spacing: 0.02em; }
+.key.key-clear { color: #ff8a8a; }
+.key.key-digit { color: var(--text-dim); font-size: 1.15rem; }
+.key.gaze-focus { border-color: var(--accent); box-shadow: var(--glow); background: #11233a; transform: scale(1.07); z-index: 2; }
+.key.gaze-progress::after { content:''; position:absolute; inset:-3px; border-radius:inherit; border:3px solid transparent; border-top-color:#6dff9e; animation: spin 0.7s linear infinite; }
+.key.gaze-selected { background: #16331f; border-color: #6dff9e; box-shadow: 0 0 16px rgba(109,255,158,0.65); }
+
+@media (max-width: 720px) {
+  .key { font-size: 1.05rem; }
+  .key.key-action { font-size: 0.8rem; }
+  .key.key-digit { font-size: 1rem; }
+  /* Equal flex rows still divide the keyboard block evenly (same approach
+     as desktop) — but the block itself is now height-capped on phones
+     instead of stretching to fill 100% of the remaining viewport, which
+     is what was stretching each key into a tall pill on tall screens. */
+  .keyboard-grid { flex: 0 1 380px; }
+  .kb-row, .kb-row.kb-row-actions { flex: 1; height: auto; max-height: none; }
+  .chat-keyboard-grid { height: 42vh; max-height: 320px; }
+}
+
+/* ---------- YouTube layout ---------- */
+.small-btn {
+  margin-left: auto;
+  margin-right: 88px;
+  padding: 10px 18px;
+  flex-direction: row;
+  font-size: 0.95rem;
+  border-radius: 12px;
+  gap: 6px;
+}
+.yt-search-row { margin-bottom: 14px; }
+.search-bar {
+  width: 100%;
+  flex-direction: row;
+  justify-content: flex-start;
+  padding: 18px 24px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  border-radius: 16px;
+  border-color: rgba(255,255,255,0.1);
+  background: linear-gradient(180deg, #101a30, var(--bg-panel));
+}
+.yt-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 16px;
+  min-height: 0;
+}
+.yt-nav-col { display: flex; flex-direction: column; gap: 14px; }
+.nav-block { flex: 1; font-size: 0.95rem; flex-direction: row; gap: 6px; }
+.yt-results {
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  align-content: start;
+  scrollbar-width: thin;
+  border-radius: 16px;
+  padding: 4px 6px 12px 2px;
+}
+.yt-empty { color: var(--text-dim); grid-column: 1/-1; text-align: center; margin-top: 40px; font-size: 1.05rem; }
+.yt-empty.yt-loading { color: var(--accent); }
+.yt-empty.yt-error { color: var(--accent-warm); }
+@media (max-width: 720px) {
+  .yt-body { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .yt-nav-col { flex-direction: row; }
+}
+
+.yt-key-setup {
+  background: var(--bg-panel);
+  border: 1.5px solid rgba(255,179,92,0.4);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 14px;
+}
+.yt-key-setup p { margin: 0 0 10px; color: var(--text-dim); font-size: 0.95rem; }
+.yt-key-setup input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(255,255,255,0.12);
+  background: #0a0f1c;
+  color: var(--text-main);
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+#ytPlayerOverlay { z-index: 110; flex-direction: row; align-items: stretch; padding: 24px; gap: 14px; }
+.yt-player-nav { width: 110px; justify-content: center; }
+.yt-player-wrap { flex: 1; background: #000; border-radius: 18px; overflow: hidden; position: relative; }
+.yt-player-wrap iframe { width: 100%; height: 100%; border: 0; }
+.yt-player-close { position: absolute; top: 18px; right: 24px; }
+.yt-now-playing-title {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.85));
+  color: var(--text-main); font-size: 0.95rem; font-weight: 600;
+  padding: 24px 18px 12px; pointer-events: none;
+}
+.yt-video-tile {
+  background: var(--bg-panel);
+  border-radius: 14px;
+  border: 1.5px solid rgba(255,255,255,0.08);
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+.yt-video-tile .yt-thumb-wrap { position: relative; aspect-ratio: 16/9; background: #060a14; }
+.yt-video-tile img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.yt-video-tile .yt-play-badge {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 2.1rem; color: rgba(255,255,255,0.92); opacity: 0;
+  background: rgba(0,0,0,0.25); transition: opacity 0.15s ease;
+}
+.yt-video-tile.gaze-focus .yt-play-badge { opacity: 1; }
+.yt-video-tile .yt-title {
+  padding: 10px 12px; font-size: 0.88rem; font-weight: 600; color: var(--text-main);
+  line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.yt-video-tile.gaze-focus { border-color: var(--accent); box-shadow: var(--glow); transform: scale(1.025); z-index: 2; }
+.yt-video-tile.gaze-progress::after { content:''; position:absolute; top:8px; right:8px; width:16px; height:16px; border-radius:50%; border:3px solid transparent; border-top-color:#6dff9e; animation: spin 0.7s linear infinite; }
+.yt-video-tile.gaze-selected { border-color: #6dff9e; box-shadow: 0 0 16px rgba(109,255,158,0.6); }
+
+/* ---------- Speak toast ---------- */
+.speak-toast {
+  position: fixed;
+  bottom: 6%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-panel);
+  border: 1.5px solid var(--accent);
+  box-shadow: var(--glow);
+  color: var(--text-main);
+  padding: 16px 28px;
+  border-radius: 16px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  z-index: 80;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.speak-toast.hidden { display: none; }
+
+
+/* ---- HA status indicator ---- */
+.ha-status{position:fixed;top:16px;right:16px;font-size:0.75rem;color:var(--text-dim);z-index:130;display:flex;align-items:center;gap:5px;background:rgba(6,8,15,0.75);padding:5px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.08);}
+.ha-dot{width:7px;height:7px;border-radius:50%;background:#555;}
+.ha-dot.ok{background:#6dff9e;}
+.ha-dot.err{background:#ff5c5c;}
+/* ---- Device ON tile ---- */
+.tile.device-on{background:#0e2a1a;border-color:#6dff9e;box-shadow:0 0 16px rgba(109,255,158,0.55);}
+.tile.device-on .tile-dot{background:#6dff9e;}
+.tile-status{font-size:0.75rem;color:var(--text-dim);font-weight:500;margin-top:-4px;}
+.tile.device-on .tile-status{color:#6dff9e;}
+/* ---- Smart Home grid ---- */
+.grid-smarthome{flex:1;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:clamp(12px,2vw,24px);}
+@media(max-width:720px){.grid-smarthome{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(3,1fr);}}
+@keyframes tilePulse{0%{transform:scale(1);}40%{transform:scale(0.96);}100%{transform:scale(1);}}
+.tile.pulsing{animation:tilePulse 0.32s ease;}
+/* Cheap opacity pulse instead of an animated drop-shadow filter (filter
+   animation forces a GPU re-blur every frame on every "on" tile at once —
+   one of the bigger steady-state costs on low-end devices). */
+.tile.device-on .tile-icon{animation:deviceIconGlow 1.8s ease-in-out infinite;}
+@keyframes deviceIconGlow{0%,100%{opacity:0.85;}50%{opacity:1;}}
+
+/* ---- HA settings page (base-URL configurator) ---- */
+.ha-settings-sub { color: var(--text-dim); font-size: 0.92rem; line-height: 1.5; }
+.ha-settings-status { font-size: 0.9rem; font-weight: 600; min-height: 1.2em; }
+.ha-settings-status.ok { color: #6dff9e; }
+.ha-settings-status.err { color: #ff8a8a; }
+/* ---- Chat layout ---- */
+.chat-messages{flex:1;overflow-y:auto;background:var(--bg-panel);border:1.5px solid rgba(255,255,255,0.08);border-radius:16px;padding:14px 16px;margin-bottom:12px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;min-height:0;}
+.chat-bubble{max-width:85%;padding:10px 16px;border-radius:14px;font-size:1rem;line-height:1.5;word-break:break-word;}
+.chat-bubble.sent{align-self:flex-end;background:#1a3a5c;border:1px solid rgba(74,216,255,0.3);color:var(--accent);}
+.chat-bubble.status{align-self:center;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:var(--text-dim);font-size:0.85rem;}
+.chat-controls{display:grid;grid-template-columns:1fr auto auto;gap:10px;margin-bottom:12px;}
+.chat-preview{background:var(--bg-panel);border:1.5px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 16px;font-size:1.1rem;color:var(--accent-warm);word-break:break-word;display:flex;align-items:center;}
+.chat-ctrl-btn{border-radius:12px;padding:12px 20px;font-size:1rem;font-weight:700;flex-direction:row;gap:6px;white-space:nowrap;}
+.chat-send-btn{background:#1a3a5c;border-color:var(--accent);color:var(--accent);}
+.chat-clear-btn{background:#2a1a1a;border-color:var(--accent-warm);color:var(--accent-warm);}
+.chat-keyboard-grid{flex:0 0 auto;display:flex;flex-direction:column;gap:6px;height:36vh;}
+
+/* ---------- Chat hub: member list ---------- */
+.member-toolbar { display: flex; gap: 10px; margin-bottom: 12px; }
+.member-toolbar .tile { flex: 1; padding: 14px 16px; }
+.member-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.member-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-panel);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 14px 18px;
+  position: relative;
+}
+.member-row.gaze-focus { border-color: var(--accent); box-shadow: var(--glow); }
+.member-row.gaze-progress::after { content:''; position:absolute; inset:-3px; border-radius:inherit; border:3px solid transparent; border-top-color:#6dff9e; animation: spin 0.7s linear infinite; }
+.member-row.gaze-selected { background:#16331f; border-color:#6dff9e; }
+.member-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-warm));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1.1rem; color: #06121c;
+  flex-shrink: 0;
+}
+.member-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.member-name { font-weight: 700; font-size: 1.05rem; color: var(--text-main); }
+.member-chatid { font-size: 0.82rem; color: var(--text-dim); }
+.member-deliverystatus { font-size: 1.3rem; line-height: 1; width: 28px; text-align: center; }
+.member-deliverystatus.sent { color: #6dff9e; }
+.member-deliverystatus.failed { color: #ff6d6d; }
+.member-deliverystatus.pending { color: var(--text-dim); }
+.member-remove-btn {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: rgba(255,109,109,0.08); border: 1px solid rgba(255,109,109,0.3);
+  color: #ff8a8a; font-size: 1rem; flex-shrink: 0;
+  position: relative;
+}
+.member-remove-btn.gaze-focus { border-color: #ff6d6d; box-shadow: 0 0 18px rgba(255,109,109,0.6); transform: scale(1.08); }
+.member-remove-btn.gaze-progress::after { content:''; position:absolute; inset:-3px; border-radius:inherit; border:3px solid transparent; border-top-color:#ff6d6d; animation: spin 0.7s linear infinite; }
+.member-remove-btn.gaze-selected { background: #ff6d6d; color: #2a0a0a; }
+.member-empty { color: var(--text-dim); text-align: center; padding: 40px 16px; font-size: 1rem; }
+
+/* ---------- Add member form ---------- */
+.add-member-form { display: flex; flex-direction: column; gap: 16px; max-width: 560px; margin: 0 auto; width: 100%; }
+.add-member-field { display: flex; flex-direction: column; gap: 6px; }
+.add-member-field label { color: var(--text-dim); font-size: 0.9rem; font-weight: 600; }
+.add-member-field .field-display {
+  background: var(--bg-panel); border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 12px; padding: 14px 16px; font-size: 1.1rem; min-height: 1.4em;
+  color: var(--text-main); word-break: break-word;
+}
+.add-member-field .field-display.placeholder { color: var(--text-dim); }
+.add-member-field-tabs { display: flex; gap: 8px; }
+.add-member-field-tab {
+  flex: 1; padding: 10px; border-radius: 10px; font-size: 0.95rem; font-weight: 700;
+  background: var(--bg-panel); border: 1.5px solid rgba(255,255,255,0.08); color: var(--text-dim);
+}
+.add-member-field-tab.active-field { border-color: var(--accent); color: var(--accent); background: #11233a; }
+.add-member-actions { display: flex; gap: 12px; margin-top: 4px; flex-wrap: wrap; }
+.add-member-actions .tile { flex: 1; padding: 14px; min-width: 140px; }
+
+/* ---------- Per-member / group conversation ---------- */
+.conv-header-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.conv-target-pill {
+  background: #11233a; border: 1px solid var(--accent); color: var(--accent);
+  border-radius: 999px; padding: 6px 14px; font-size: 0.9rem; font-weight: 700;
+}
+.chat-bubble.incoming { align-self: flex-start; background: #1c1c2e; border: 1px solid rgba(255,179,92,0.3); color: var(--text-main); }
+.chat-bubble .bubble-meta { display: block; font-size: 0.72rem; color: var(--text-dim); margin-top: 4px; }
+.chat-bubble.sent .delivery-marks { font-size: 0.85rem; margin-left: 6px; }
+
+</style>
+</head>
+<body>
+
+  <!-- Hidden camera + canvas (engine, never shown to patient) -->
+  
+  <div class="ha-status">
+    <div class="ha-dot" id="haDot"></div>
+    <span id="haStatusText">HA...</span>
+  </div>
+  <video id="webcam" autoplay playsinline muted></video>
+  <canvas id="processCanvas" style="display:none;"></canvas>
+
+  <!-- Visible gaze cursor — pure rendering layer on top of the tracked
+       gaze point. Does not affect tracking/hit-testing in any way. -->
+  <div id="gazeCursor" class="gaze-cursor">
+    <span class="gaze-cursor-ring"></span>
+    <span class="gaze-cursor-dot"></span>
+  </div>
+
+  <!-- Status / boot overlay -->
+  <div id="bootOverlay" class="overlay">
+    <div class="boot-card">
+      <div class="logo-mark">VoiceEye</div>
+      <p id="bootMessage">Starting camera…</p>
+      <div class="spinner" aria-hidden="true"></div>
+      <button id="bootRetry" class="hidden-btn">Try Again</button>
+    </div>
+  </div>
+
+  <!-- Person-select step: shown before calibration so the caregiver/patient
+       can lock tracking onto the correct face when more than one person is
+       in front of the camera. -->
+  <div id="personSelectOverlay" class="overlay hidden">
+    <div class="person-select-title" id="personSelectTitle">Who is the patient?</div>
+    <div class="person-select-sub" id="personSelectSub">Tap the box around the patient's face.</div>
+    <div class="person-select-stage">
+      <video id="personSelectVideo" autoplay playsinline muted></video>
+      <div id="faceBoxLayer"></div>
+    </div>
+    <p class="person-select-hint" id="personSelectHint"></p>
+    <div class="person-select-confirm hidden" id="personSelectConfirmRow">
+      <button class="person-select-btn primary" id="personSelectConfirmBtn">Yes, this is the patient</button>
+      <button class="person-select-btn" id="personSelectRetryBtn">No, choose again</button>
+    </div>
+  </div>
+
+  <!-- 9-point calibration overlay -->
+  <div id="calibrationOverlay" class="overlay hidden">
+    <p class="calib-instructions">Look at the glowing dot and hold your gaze on it. Tap the screen 5 times while looking at it.</p>
+    <div id="calibDot" class="calib-dot"></div>
+    <p id="calibTapCounter" class="calib-tap-counter">Taps: 0 / 5</p>
+    <div class="calib-progress"><div id="calibProgressBar"></div></div>
+  </div>
+
+  <!-- ============ LAYOUT 1: HOME / EMERGENCY HUB ============ -->
+  <main id="layoutHome" class="layout active-layout">
+    <header class="top-bar">
+      <span class="brand">VoiceEye</span>
+      <span class="subtitle">Look • Blink • Speak</span>
+    </header>
+    <div class="grid grid-home">
+      <button class="tile gaze-target" data-action="speak" data-phrase="I need to use the bathroom.">
+        <span class="tile-dot"></span>
+        <span class="tile-icon">🚻</span>
+        <span class="tile-label">Bathroom</span>
+      </button>
+      <button class="tile gaze-target" data-action="speak" data-phrase="I am hungry. I need food.">
+        <span class="tile-dot"></span>
+        <span class="tile-icon">🍽️</span>
+        <span class="tile-label">Food</span>
+      </button>
+      <button class="tile gaze-target" data-action="speak" data-phrase="I am thirsty. I need water.">
+        <span class="tile-dot"></span>
+        <span class="tile-icon">💧</span>
+        <span class="tile-label">Water</span>
+      </button>
+      <button class="tile gaze-target" data-action="speak" data-phrase="I am in pain. Please help me.">
+        <span class="tile-dot"></span>
+        <span class="tile-icon">⚠️</span>
+        <span class="tile-label">Pain / Help</span>
+      </button>
+      <button class="tile gaze-target tile-nav" data-action="goto" data-target="layoutKeyboard">
+        <span class="tile-dot"></span>
+        <span class="tile-icon">⌨️</span>
+        <span class="tile-label">Keyboard Mode</span>
+      </button>
+      <button class="tile gaze-target tile-nav" data-action="goto" data-target="layoutChat">
+        <span class="tile-dot"></span>
+        <span class="tile-icon">💬</span>
+        <span class="tile-label">Message Members</span>
+      </button>
+      <button class="tile gaze-target tile-nav" data-action="goto" data-target="layoutSmartHome">
+        <span class="tile-dot"></span>
+        <span class="tile-icon">🏠</span>
+        <span class="tile-label">Smart Home</span>
+      </button>
+      <button class="tile gaze-target tile-nav" data-action="goto" data-target="layoutYoutube">
+        <span class="tile-dot"></span>
+        <span class="tile-icon">▶️</span>
+        <span class="tile-label">YouTube Mode</span>
+      </button>
+      <button class="tile gaze-target" data-action="recalibrate">
+        <span class="tile-dot"></span>
+        <span class="tile-icon">🎯</span>
+        <span class="tile-label">Recalibrate</span>
+      </button>
+    </div>
+  </main>
+
+  <!-- ============ LAYOUT 2: KEYBOARD / TTS MODE ============ -->
+  <main id="layoutKeyboard" class="layout">
+    <header class="top-bar">
+      <span class="brand">VoiceEye</span>
+      <span class="subtitle">Keyboard Mode</span>
+    </header>
+    <div class="output-box" id="typedOutput" aria-live="polite"></div>
+    <div class="keyboard-grid" id="keyboardGrid"></div>
+  </main>
+
+  <!-- ============ LAYOUT 3: YOUTUBE HUB ============ -->
+  <main id="layoutYoutube" class="layout">
+    <header class="top-bar">
+      <span class="brand">VoiceEye</span>
+      <span class="subtitle">YouTube Mode</span>
+      <button class="tile gaze-target small-btn" data-action="goto" data-target="layoutHome">
+        <span class="tile-dot"></span>Back to Home
+      </button>
+    </header>
+
+    
+    <div class="yt-search-row">
+      <button class="tile gaze-target search-bar" id="ytSearchBar" data-action="search">
+        <span class="tile-dot"></span>
+        <span id="ytSearchLabel">🔍 Tap to search…</span>
+      </button>
+    </div>
+
+    <div class="yt-body">
+      <div class="yt-nav-col">
+        <button class="tile gaze-target nav-block" data-action="scrollgrid" data-dir="up">
+          <span class="tile-dot"></span>▲ Scroll Up
+        </button>
+        <button class="tile gaze-target nav-block" data-action="scrollgrid" data-dir="down">
+          <span class="tile-dot"></span>▼ Scroll Down
+        </button>
+      </div>
+      <div class="yt-results" id="ytResults">
+        <p class="yt-empty" id="ytEmptyMsg">Search results will appear here.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Fullscreen video player (opens on selecting a search result) -->
+  <div id="ytPlayerOverlay" class="overlay hidden">
+    <button class="tile gaze-target small-btn yt-player-close" data-action="closeplayer">
+      <span class="tile-dot"></span>Close Video
+    </button>
+    <div class="yt-nav-col yt-player-nav">
+      <button class="tile gaze-target nav-block" data-action="scroll" data-dir="up">
+        <span class="tile-dot"></span>▲ Prev
+      </button>
+      <button class="tile gaze-target nav-block" data-action="scroll" data-dir="down">
+        <span class="tile-dot"></span>▼ Next
+      </button>
+    </div>
+    <div class="yt-player-wrap">
+      <iframe id="ytPlayer" src="" title="YouTube player" frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen></iframe>
+      <div class="yt-now-playing-title" id="ytNowPlayingTitle"></div>
+    </div>
+  </div>
+
+  <!-- ============ LAYOUT 4: YOUTUBE SEARCH KEYBOARD ============ -->
+  <main id="layoutYtSearch" class="layout">
+    <header class="top-bar">
+      <span class="brand">VoiceEye</span>
+      <span class="subtitle">Search YouTube</span>
+    </header>
+    <div class="output-box" id="ytTypedOutput" aria-live="polite"></div>
+    <div class="keyboard-grid" id="ytKeyboardGrid"></div>
+  </main>
+
+
+  <!-- LAYOUT: CHAT HUB — MEMBER LIST -->
+  <main id="layoutChat" class="layout">
+    <header class="top-bar">
+      <span class="brand">VoiceEye</span>
+      <span class="subtitle">💬 Members</span>
+      <button class="tile gaze-target small-btn" data-action="goto" data-target="layoutHome">
+        <span class="tile-dot"></span>Home
+      </button>
+    </header>
+    <div class="member-toolbar">
+      <button class="tile gaze-target" data-action="goto" data-target="layoutAddMember">
+        <span class="tile-dot"></span>➕ Add Member
+      </button>
+      <button class="tile gaze-target" data-action="open-group-chat">
+        <span class="tile-dot"></span>📢 Message All
+      </button>
+    </div>
+    <div class="member-list" id="memberList">
+      <!-- populated by renderMemberList() -->
+    </div>
+  </main>
+
+  <!-- LAYOUT: ADD MEMBER -->
+  <main id="layoutAddMember" class="layout">
+    <header class="top-bar">
+      <span class="brand">VoiceEye</span>
+      <span class="subtitle">➕ Add Member</span>
+      <button class="tile gaze-target small-btn" data-action="goto" data-target="layoutChat">
+        <span class="tile-dot"></span>Back
+      </button>
+    </header>
+    <div class="add-member-form">
+      <div class="add-member-field-tabs">
+        <button class="tile gaze-target add-member-field-tab active-field" id="fieldTabName" data-action="addmember-field" data-field="name">Name</button>
+        <button class="tile gaze-target add-member-field-tab" id="fieldTabChatId" data-action="addmember-field" data-field="chatid">Chat ID</button>
+      </div>
+      <div class="add-member-field">
+        <label>Name</label>
+        <div class="field-display placeholder" id="addMemberNameDisplay">Type name below…</div>
+      </div>
+      <div class="add-member-field">
+        <label>Telegram Chat ID</label>
+        <div class="field-display placeholder" id="addMemberChatIdDisplay">Type chat ID below…</div>
+      </div>
+      <div class="add-member-actions">
+        <button class="tile gaze-target chat-ctrl-btn chat-send-btn" data-action="addmember-save">
+          <span class="tile-dot"></span>✅ Save Member
+        </button>
+        <button class="tile gaze-target chat-ctrl-btn chat-clear-btn" data-action="addmember-clear">
+          <span class="tile-dot"></span>🗑 Clear
+        </button>
+      </div>
+    </div>
+    <div class="chat-keyboard-grid" id="addMemberKeyboardGrid"></div>
+  </main>
+
+  <!-- LAYOUT: CONVERSATION (single member OR "All") -->
+  <main id="layoutConversation" class="layout">
+    <header class="top-bar conv-header-row">
+      <span class="brand">VoiceEye</span>
+      <span class="conv-target-pill" id="convTargetPill">—</span>
+      <button class="tile gaze-target small-btn" data-action="goto" data-target="layoutChat">
+        <span class="tile-dot"></span>Back
+      </button>
+    </header>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-bubble status">Gaze-type a message below, then look at SEND to deliver it via Telegram.</div>
+    </div>
+    <div class="chat-controls">
+      <div class="chat-preview" id="chatPreview">...type below...</div>
+      <button class="tile gaze-target chat-ctrl-btn chat-send-btn" data-action="chat-send">
+        <span class="tile-dot"></span>📤 SEND
+      </button>
+      <button class="tile gaze-target chat-ctrl-btn chat-clear-btn" data-action="chat-clear">
+        <span class="tile-dot"></span>🗑 CLR
+      </button>
+    </div>
+    <div class="chat-keyboard-grid" id="chatKeyboardGrid"></div>
+  </main>
+
+  <!-- LAYOUT: SMART HOME -->
+  <main id="layoutSmartHome" class="layout">
+    <header class="top-bar">
+      <span class="brand">VoiceEye</span>
+      <span class="subtitle">🏠 Smart Home Control</span>
+      <button class="tile gaze-target small-btn" data-action="goto" data-target="layoutHome">
+        <span class="tile-dot"></span>Home
+      </button>
+    </header>
+    <div class="grid grid-smarthome">
+      <button class="tile gaze-target" data-action="toggle-device" data-device="light.bedroom_light" id="tile_light1">
+        <span class="tile-dot"></span><span class="tile-icon">💡</span>
+        <span class="tile-label">Bedroom Light</span><span class="tile-status" id="status_light1">OFF</span>
+      </button>
+      <button class="tile gaze-target" data-action="toggle-device" data-device="switch.bedroom_fan" id="tile_fan1">
+        <span class="tile-dot"></span><span class="tile-icon">🌀</span>
+        <span class="tile-label">Bedroom Fan</span><span class="tile-status" id="status_fan1">OFF</span>
+      </button>
+      <button class="tile gaze-target" data-action="ha-all-off">
+        <span class="tile-dot"></span><span class="tile-icon">🌙</span>
+        <span class="tile-label">All OFF</span><span class="tile-status">Sleep Mode</span>
+      </button>
+      <button class="tile gaze-target" data-action="ha-all-on">
+        <span class="tile-dot"></span><span class="tile-icon">☀️</span>
+        <span class="tile-label">All ON</span><span class="tile-status">Wake Mode</span>
+      </button>
+      <button class="tile gaze-target" data-action="goto" data-target="layoutEspSettings">
+        <span class="tile-dot"></span><span class="tile-icon">⚙️</span>
+        <span class="tile-label">ESP8266 IP</span><span class="tile-status">Backup Address</span>
+      </button>
+    </div>
+  </main>
+
+  <!-- LAYOUT: ESP8266 IP SETTINGS (backup — use if esp8266home.local fails) -->
+  <main id="layoutEspSettings" class="layout">
+    <header class="top-bar">
+      <span class="brand">VoiceEye</span>
+      <span class="subtitle">⚙️ ESP8266 Backup IP</span>
+      <button class="tile gaze-target small-btn" data-action="goto" data-target="layoutSmartHome">
+        <span class="tile-dot"></span>Back
+      </button>
+    </header>
+    <div class="add-member-form" style="max-width:680px;">
+      <div class="add-member-field">
+        <label>ESP8266 IP Address (e.g. http://192.168.0.105)</label>
+        <div class="field-display placeholder" id="espIpDisplay">Type IP below…</div>
+      </div>
+      <p class="ha-settings-sub">সাধারণত esp8266home.local দিয়েই কাজ হয়। কিন্তু mDNS কাজ না করলে এখানে ESP8266-এর IP দিন। Arduino Serial Monitor-এ IP দেখা যাবে।</p>
+      <div id="espIpStatus" class="ha-settings-status"></div>
+      <div class="add-member-actions">
+        <button class="tile gaze-target chat-ctrl-btn chat-send-btn" data-action="espsettings-save">
+          <span class="tile-dot"></span>✅ Save IP
+        </button>
+        <button class="tile gaze-target chat-ctrl-btn" data-action="espsettings-test">
+          <span class="tile-dot"></span>🔄 Test
+        </button>
+        <button class="tile gaze-target chat-ctrl-btn chat-clear-btn" data-action="espsettings-clear">
+          <span class="tile-dot"></span>🗑 Clear
+        </button>
+      </div>
+    </div>
+    <div class="chat-keyboard-grid" id="espSettingsKeyboardGrid"></div>
+  </main>
+
+  <!-- TTS speak feedback toast -->
+  <div id="speakToast" class="speak-toast hidden"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js" crossorigin="anonymous"></script>
+  <script>
+/* =========================================================================
+   VoiceEye — Gaze-Controlled Communication Engine
+   100% client-side. MediaPipe FaceMesh (CDN) + custom gaze regression.
+   ========================================================================= */
+
+(() => {
+  'use strict';
+
+  /* ---------------------------------------------------------------------
+   * CONSTANTS
+   * ------------------------------------------------------------------- */
+  const LEFT_EYE = { outer: 33, inner: 133, top: 159, bottom: 145, corners: [33, 133] };
+  const RIGHT_EYE = { outer: 263, inner: 362, top: 386, bottom: 374, corners: [263, 362] };
+  // EAR landmark sets (6 pts each, standard MediaPipe face mesh mapping)
+  const LEFT_EAR_IDX = [33, 160, 158, 133, 153, 144];
+  const RIGHT_EAR_IDX = [263, 387, 385, 362, 380, 373];
+  const LEFT_IRIS = [468, 469, 470, 471, 472];
+  const RIGHT_IRIS = [473, 474, 475, 476, 477];
+  const NOSE_TIP = 1;
+
+  const BLINK_MIN_MS = 80;   // real intentional blinks are fast; near-instant closures still count
+  const BLINK_MAX_MS = 450;  // above this it's eyes-resting-closed, not treated as a click
+  const EAR_SMOOTH_FRAMES = 3;
+  const BLINK_RATIO = 0.72; // fraction of learned open-eye baseline that counts as "closed"
+  const DWELL_TO_PROGRESS_MS = 350; // time focused before "armed" (visual feedback only)
+  const MIN_FOCUS_BEFORE_SELECT_MS = 300; // ignore blink if focus is too fresh (avoid misfires while scanning)
+  const CALIB_TAPS_REQUIRED = 5;
+  const FOCUS_LEAVE_GRACE_MS = 180; // brief tolerance so focus doesn't drop on one noisy frame
+  const POST_SELECT_LOCKOUT_MS = 450; // short cooldown after any selection, prevents accidental double-fire
+  const RAW_MEDIAN_WINDOW = 9; // frames median-filtered to kill single-frame iris-detection glitches
+  const MAX_JUMP_FRACTION = 0.35; // ignore single-frame screen jumps bigger than this fraction of the diagonal
+  const MAX_FACES_DURING_SELECT = 4; // cap multi-face detection cost to keep frame rate smooth
+  const FACE_MATCH_MAX_DIST = 0.35; // descriptor distance above this = "not the same person", lock is dropped
+  const FACE_LOCK_GRACE_MS = 1500; // how long we keep the lock through a single missed-match frame/occlusion
+
+  const CALIB_POINTS = [
+    [0.05, 0.05], [0.5, 0.05], [0.95, 0.05],
+    [0.05, 0.5], [0.5, 0.5], [0.95, 0.5],
+    [0.05, 0.95], [0.5, 0.95], [0.95, 0.95],
+  ];
+
+  /* ---------------------------------------------------------------------
+   * STATE
+   * ------------------------------------------------------------------- */
+  const state = {
+    faceMesh: null,
+    camera: null,
+    stream: null,
+    landmarks: null,
+    earHistory: [],
+    earBaseline: null,       // learned running open-eye EAR baseline
+    blinkStart: null,
+    isBlinking: false,
+    calibrating: false,
+    calibIndex: 0,
+    calibTapCount: 0,
+    calibSamples: [],   // {raw:[gx,gy], screen:[sx,sy]}
+    calibSampleBuffer: [],   // rolling buffer of recent [gx,gy] while fixating
+    regressionX: null,  // coefficients
+    regressionY: null,
+    calibrated: false,
+    smoothedGaze: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
+    rawGaze: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
+    rawMedianBufX: [],
+    rawMedianBufY: [],
+    oneEuro: null,
+    focusedEl: null,
+    focusStart: 0,
+    focusLeaveAt: null,
+    progressApplied: false,
+    lastSelectTime: 0,
+    postSelectLockUntil: 0,
+    lastResultsAt: 0,
+    restarting: false,
+    // --- person-lock state ---
+    allFaces: null,           // most recent results.multiFaceLandmarks (all detected faces)
+    lockedDescriptor: null,   // geometric signature of the chosen patient's face
+    lockedFaceIndex: null,    // index into allFaces matching the lock, this frame (null = lost)
+    lockLostSince: null,      // timestamp when the lock was last successfully matched
+    selectingPerson: false,
+    multiFaceMode: true,      // tracking runs with maxNumFaces > 1 until a lock is established
+  };
+
+  /* ---------------------------------------------------------------------
+   * 1€ FILTER (gaze smoothing) — suppresses micro-tremor while staying
+   * responsive to intentional movement.
+   * ------------------------------------------------------------------- */
+  function makeLowPass() {
+    return { hasPrev: false, prev: 0, filter(v) { if (!this.hasPrev) { this.hasPrev = true; this.prev = v; } this.prev = v; return this.prev; } };
+  }
+  function alpha(cutoff, dt) {
+    const tau = 1 / (2 * Math.PI * cutoff);
+    return 1 / (1 + tau / dt);
+  }
+  function makeOneEuro({ minCutoff = 1.0, beta = 0.02, dCutoff = 1.0 } = {}) {
+    return {
+      x: { hasPrev: false, prev: 0, dPrev: 0 },
+      y: { hasPrev: false, prev: 0, dPrev: 0 },
+      minCutoff, beta, dCutoff,
+      filterAxis(axis, value, dt) {
+        if (!axis.hasPrev) { axis.hasPrev = true; axis.prev = value; axis.dPrev = 0; return value; }
+        const dx = (value - axis.prev) / dt;
+        const aD = alpha(this.dCutoff, dt);
+        const dHat = aD * dx + (1 - aD) * axis.dPrev;
+        const cutoff = this.minCutoff + this.beta * Math.abs(dHat);
+        const a = alpha(cutoff, dt);
+        const filtered = a * value + (1 - a) * axis.prev;
+        axis.prev = filtered;
+        axis.dPrev = dHat;
+        return filtered;
+      },
+      filter(x, y, dt) {
+        return [this.filterAxis(this.x, x, dt), this.filterAxis(this.y, y, dt)];
+      },
+    };
+  }
+  state.oneEuro = makeOneEuro({ minCutoff: 0.45, beta: 0.004, dCutoff: 1.0 });
+
+  // Median-of-N pre-filter: knocks out single-frame iris-detection glitches
+  // (the main source of high-frequency "vibration") before they ever reach
+  // calibration sampling or the One-Euro smoother. This is applied to BOTH
+  // calibration-time and live-tracking-time signal, so the model is always
+  // trained on and fed the same kind of clean input.
+  function medianOf(arr) {
+    const s = [...arr].sort((a, b) => a - b);
+    const mid = Math.floor(s.length / 2);
+    return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+  }
+  function pushMedian(buf, val, max) {
+    buf.push(val);
+    if (buf.length > max) buf.shift();
+    return medianOf(buf);
+  }
+
+  /* ---------------------------------------------------------------------
+   * GEOMETRY HELPERS
+   * ------------------------------------------------------------------- */
+  function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+
+  function ear(lm, idx) {
+    const p = idx.map(i => lm[i]);
+    const vert1 = dist(p[1], p[5]);
+    const vert2 = dist(p[2], p[4]);
+    const horiz = dist(p[0], p[3]);
+    if (horiz === 0) return 0.3;
+    return (vert1 + vert2) / (2 * horiz);
+  }
+
+  function centroid(lm, idxs) {
+    let x = 0, y = 0;
+    idxs.forEach(i => { x += lm[i].x; y += lm[i].y; });
+    return { x: x / idxs.length, y: y / idxs.length };
+  }
+
+  /* ---------------------------------------------------------------------
+   * FACE DESCRIPTOR — a small set of scale/rotation-tolerant ratios that
+   * act as a lightweight "fingerprint" for re-identifying the SAME person
+   * frame-to-frame, so that other people walking into frame never steal
+   * tracking away from the patient that was selected during calibration.
+   * This is not full face-recognition (not needed/appropriate here) — it
+   * only needs to be stable for one person across a few seconds and able
+   * to tell two simultaneously-visible faces apart.
+   * ------------------------------------------------------------------- */
+  function faceDescriptor(lm) {
+    const leftEyeOuter = lm[LEFT_EYE.outer], rightEyeOuter = lm[RIGHT_EYE.outer];
+    const leftEyeInner = lm[LEFT_EYE.inner], rightEyeInner = lm[RIGHT_EYE.inner];
+    const nose = lm[NOSE_TIP];
+    const chin = lm[152];
+    const foreheadTop = lm[10];
+    const jawLeft = lm[234], jawRight = lm[454];
+
+    // Inter-ocular distance is the normalizer — makes the rest of the
+    // ratios roughly invariant to distance-from-camera.
+    const iod = dist(leftEyeOuter, rightEyeOuter) || 1e-6;
+
+    return [
+      dist(leftEyeInner, rightEyeInner) / iod,
+      dist(nose, chin) / iod,
+      dist(foreheadTop, chin) / iod,
+      dist(jawLeft, jawRight) / iod,
+      dist(nose, leftEyeOuter) / iod,
+      dist(nose, rightEyeOuter) / iod,
+      dist(jawLeft, nose) / iod,
+      dist(jawRight, nose) / iod,
+    ];
+  }
+
+  function descriptorDistance(a, b) {
+    if (!a || !b) return Infinity;
+    let sum = 0;
+    for (let i = 0; i < a.length; i++) { const d = a[i] - b[i]; sum += d * d; }
+    return Math.sqrt(sum / a.length);
+  }
+
+  /**
+   * Given all faces detected this frame, find the one whose descriptor is
+   * closest to the locked patient's descriptor. Returns {index, lm, dist}
+   * or null if nothing is close enough to trust.
+   */
+  function findLockedFace(allFaces) {
+    if (!state.lockedDescriptor || !allFaces || !allFaces.length) return null;
+    let best = null, bestDist = Infinity;
+    for (let i = 0; i < allFaces.length; i++) {
+      const d = descriptorDistance(faceDescriptor(allFaces[i]), state.lockedDescriptor);
+      if (d < bestDist) { bestDist = d; best = i; }
+    }
+    if (best === null || bestDist > FACE_MATCH_MAX_DIST) return null;
+    return { index: best, lm: allFaces[best], dist: bestDist };
+  }
+
+  /**
+   * Raw gaze feature extraction — ported from the proven working build.
+   * Iris-center offset from the eye-corner midpoint gives the gaze
+   * direction signal; a light, fixed head-position term keeps it from
+   * being thrown off by small head drift, without overcorrecting (a
+   * heavier per-frame head-pose subtraction was found to fight the
+   * calibration regression and amplify jitter instead of removing it).
+   */
+  function computeGazeFeature(lm) {
+    const leftIris = centroid(lm, LEFT_IRIS);
+    const rightIris = centroid(lm, RIGHT_IRIS);
+    const irisCX = (leftIris.x + rightIris.x) / 2;
+    const irisCY = (leftIris.y + rightIris.y) / 2;
+
+    const midX = (lm[LEFT_EYE.outer].x + lm[RIGHT_EYE.inner].x) / 2;
+    const midY = (lm[LEFT_EYE.outer].y + lm[RIGHT_EYE.inner].y) / 2;
+
+    const offX = (irisCX - midX) * 8;
+    const offY = (irisCY - midY) * 6;
+
+    const nose = lm[NOSE_TIP];
+    const gx = 1 - (nose.x + offX); // mirrored for the selfie-facing camera
+    const gy = nose.y + offY * 1.5;
+
+    return [gx, gy];
+  }
+
+  /* ---------------------------------------------------------------------
+   * POLYNOMIAL REGRESSION (least squares via normal equations)
+   * Maps raw gaze feature [gx, gy] -> screen pixel coordinate.
+   * Basis: [1, gx, gy, gx*gy, gx^2, gy^2]
+   * ------------------------------------------------------------------- */
+  function basis(gx, gy) { return [1, gx, gy, gx * gy, gx * gx, gy * gy]; }
+
+  function solveLeastSquares(samples, targetKey) {
+    const n = basis(0, 0).length;
+    const A = Array.from({ length: n }, () => new Array(n).fill(0));
+    const b = new Array(n).fill(0);
+    samples.forEach(s => {
+      const phi = basis(s.raw[0], s.raw[1]);
+      const t = s.screen[targetKey];
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) A[i][j] += phi[i] * phi[j];
+        b[i] += phi[i] * t;
+      }
+    });
+    // Ridge regularization for stability with few samples
+    for (let i = 0; i < n; i++) A[i][i] += 1e-3;
+    return gaussianSolve(A, b);
+  }
+
+  function gaussianSolve(A, b) {
+    const n = b.length;
+    const M = A.map((row, i) => [...row, b[i]]);
+    for (let col = 0; col < n; col++) {
+      let pivot = col;
+      for (let r = col + 1; r < n; r++) if (Math.abs(M[r][col]) > Math.abs(M[pivot][col])) pivot = r;
+      [M[col], M[pivot]] = [M[pivot], M[col]];
+      if (Math.abs(M[col][col]) < 1e-9) continue;
+      for (let r = 0; r < n; r++) {
+        if (r === col) continue;
+        const factor = M[r][col] / M[col][col];
+        for (let c = col; c <= n; c++) M[r][c] -= factor * M[col][c];
+      }
+    }
+    return M.map((row, i) => row[n] / (row[i] || 1e-9));
+  }
+
+  function applyRegression(coeffs, gx, gy) {
+    const phi = basis(gx, gy);
+    return phi.reduce((sum, v, i) => sum + v * coeffs[i], 0);
+  }
+
+  /* ---------------------------------------------------------------------
+   * CAMERA + FACEMESH BOOT
+   * ------------------------------------------------------------------- */
+  const videoEl = document.getElementById('webcam');
+  const bootOverlay = document.getElementById('bootOverlay');
+  const bootMessage = document.getElementById('bootMessage');
+  const bootRetry = document.getElementById('bootRetry');
+
+  function waitForMediaPipe(timeoutMs = 12000) {
+    return new Promise((resolve, reject) => {
+      const start = Date.now();
+      (function check() {
+        if (typeof window.FaceMesh !== 'undefined' && typeof window.Camera !== 'undefined') {
+          resolve();
+        } else if (Date.now() - start > timeoutMs) {
+          reject(new Error('Tracking library failed to load. Check your connection and try again.'));
+        } else {
+          setTimeout(check, 100);
+        }
+      })();
+    });
+  }
+
+  async function startCamera(retryCount = 0) {
+    bootMessage.textContent = 'Loading face tracking library…';
+    bootRetry.classList.remove('show');
+    try {
+      await waitForMediaPipe();
+      bootMessage.textContent = 'Requesting camera access…';
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'user',
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+        },
+        audio: false,
+      });
+      state.stream = stream;
+      videoEl.srcObject = stream;
+      videoEl.setAttribute('autoplay', '');
+      videoEl.setAttribute('playsinline', '');
+      videoEl.setAttribute('muted', '');
+      await videoEl.play().catch(() => {});
+      bootMessage.textContent = 'Loading face tracking model…';
+      await initFaceMesh();
+      startWatchdog();
+    } catch (err) {
+      console.error('Camera/tracking init error:', err);
+      if (retryCount < 2) {
+        bootMessage.textContent = 'Retrying tracking setup…';
+        setTimeout(() => startCamera(retryCount + 1), 800);
+        return;
+      }
+      bootMessage.textContent = 'Camera/tracking failed to start. Please allow camera permission and try again.';
+      bootRetry.classList.add('show');
+    }
+  }
+
+  bootRetry.addEventListener('click', () => startCamera());
+
+  async function initFaceMesh() {
+    const faceMesh = new FaceMesh({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${file}`,
+    });
+    faceMesh.setOptions({
+      // While no patient is locked yet (person-select step) we need to see
+      // everyone in frame. Once locked, we only ever need ONE face — the
+      // patient's — so we drop back to maxNumFaces:1, which is significantly
+      // cheaper per-frame and is the main fix for the "gets laggy / stuck"
+      // behavior (running multi-face detection every frame forever was the
+      // biggest cost in the pipeline).
+      maxNumFaces: state.lockedDescriptor ? 1 : MAX_FACES_DURING_SELECT,
+      refineLandmarks: true,
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.6,
+    });
+    state.multiFaceMode = !state.lockedDescriptor;
+    faceMesh.onResults(onFaceResults);
+    state.faceMesh = faceMesh;
+
+    const camera = new Camera(videoEl, {
+      onFrame: async () => {
+        try { await faceMesh.send({ image: videoEl }); } catch (e) { /* transient frame errors ignored */ }
+      },
+      width: 640,
+      height: 480,
+    });
+    state.camera = camera;
+    camera.start();
+
+    state.lastResultsAt = performance.now();
+    bootMessage.textContent = 'Tracking ready.';
+
+    // Don't hand off to person-select on a blind fixed timer — on first load
+    // the FaceMesh WASM model can still be warming up and may not have
+    // delivered a single onResults() callback yet, which is what made the
+    // very first patient-select screen show "Looking for faces…" with no
+    // boxes ever appearing. Instead, wait for the first real result (capped
+    // at 4s so a slow/no-camera case still proceeds instead of hanging).
+    const waitForFirstResult = () => new Promise((resolve) => {
+      const start = performance.now();
+      const check = () => {
+        if (state.allFaces !== undefined || performance.now() - start > 4000) {
+          resolve();
+        } else {
+          requestAnimationFrame(check);
+        }
+      };
+      check();
+    });
+
+    waitForFirstResult().then(() => {
+      bootOverlay.classList.add('hidden');
+      if (state.lockedDescriptor) {
+        // Watchdog/auto-restart case: a patient was already locked before
+        // tracking stalled. Don't re-run person-select or calibration —
+        // that would interrupt the session every time the pipeline has to
+        // recover. Just resume normal tracking with the existing lock.
+        return;
+      }
+      beginPersonSelect();
+    });
+  }
+
+  /**
+   * Switches the live FaceMesh instance between multi-face mode (used only
+   * during the person-select step) and single-face mode (used the rest of
+   * the time, once a patient is locked). Re-creating FaceMesh is cheap
+   * compared to the per-frame cost difference of running multi-face
+   * detection continuously, which was the main source of lag/stutter.
+   */
+  async function setMultiFaceMode(enabled) {
+    if (state.multiFaceMode === enabled && state.faceMesh) return;
+    state.multiFaceMode = enabled;
+    if (!state.faceMesh) return; // not booted yet, initFaceMesh will pick the right mode
+    try {
+      state.faceMesh.setOptions({
+        maxNumFaces: enabled ? MAX_FACES_DURING_SELECT : 1,
+        refineLandmarks: true,
+        minDetectionConfidence: 0.6,
+        minTrackingConfidence: 0.6,
+      });
+    } catch (e) { console.warn('setMultiFaceMode failed, continuing with current mode:', e); }
+  }
+
+  /* ---------------------------------------------------------------------
+   * WATCHDOG — recovers tracking automatically if the MediaPipe pipeline
+   * stalls. The most common trigger is the YouTube iframe player: when a
+   * video starts playing, it can compete hard enough for GPU/decode/WASM
+   * resources that FaceMesh's internal loop quietly stops delivering
+   * results and never recovers on its own. Rather than try to chase the
+   * exact browser-specific cause, this just notices "no results for N
+   * seconds while we expect tracking to be running" and does a clean
+   * camera + FaceMesh restart — so eye tracking keeps working during and
+   * after video playback instead of staying dead for the rest of the
+   * session.
+   * ------------------------------------------------------------------- */
+  const WATCHDOG_CHECK_MS = 1500;
+  const WATCHDOG_STALL_MS = 2500; // no FaceMesh results for this long = stalled
+
+  function startWatchdog() {
+    setInterval(() => {
+      if (state.restarting) return;
+      if (!state.lastResultsAt) return;
+      const sinceLastResult = performance.now() - state.lastResultsAt;
+      if (sinceLastResult > WATCHDOG_STALL_MS) {
+        console.warn('Gaze tracking stalled — restarting camera/FaceMesh pipeline.');
+        restartTracking();
+      }
+    }, WATCHDOG_CHECK_MS);
+  }
+
+  async function restartTracking() {
+    if (state.restarting) return;
+    state.restarting = true;
+    try {
+      if (state.camera && typeof state.camera.stop === 'function') {
+        try { state.camera.stop(); } catch (e) { /* ignore */ }
+      }
+      if (state.stream) {
+        state.stream.getTracks().forEach(track => { try { track.stop(); } catch (e) { /* ignore */ } });
+      }
+      state.faceMesh = null;
+      state.camera = null;
+      state.stream = null;
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+        audio: false,
+      });
+      state.stream = stream;
+      videoEl.srcObject = stream;
+      await videoEl.play().catch(() => {});
+      await initFaceMesh();
+    } catch (e) {
+      console.error('Tracking restart failed, will retry on next watchdog tick:', e);
+    } finally {
+      state.restarting = false;
+      state.lastResultsAt = performance.now(); // give the new pipeline a fresh grace window
+    }
+  }
+
+  function onFaceResults(results) {
+    state.lastResultsAt = performance.now();
+    try {
+      const allFaces = (results.multiFaceLandmarks && results.multiFaceLandmarks.length)
+        ? results.multiFaceLandmarks : [];
+      state.allFaces = allFaces;
+
+      // --- Person-select step: just feed the live face boxes, no tracking yet.
+      if (state.selectingPerson) {
+        updatePersonSelectBoxes(allFaces);
+        state.landmarks = null;
+        return;
+      }
+
+      if (allFaces.length === 0) {
+        state.landmarks = null;
+        return;
+      }
+
+      // --- Normal operation: only ever drive the cursor/UI from the face
+      // that matches the locked patient descriptor. If nobody matches
+      // (patient turned away, or someone else is the only face visible),
+      // we briefly hold the last known gaze (grace window) rather than
+      // snapping to whoever else is in frame — this is what previously
+      // caused tracking to "get confused" whenever a second person
+      // entered the shot.
+      if (state.lockedDescriptor) {
+        const match = findLockedFace(allFaces);
+        const now = performance.now();
+        if (match) {
+          state.lockedFaceIndex = match.index;
+          state.lockLostSince = null;
+          state.landmarks = match.lm;
+          processBlink(match.lm);
+          processGaze(match.lm);
+        } else {
+          state.lockedFaceIndex = null;
+          if (state.lockLostSince === null) state.lockLostSince = now;
+          if (now - state.lockLostSince > FACE_LOCK_GRACE_MS) {
+            // Patient has been out of frame / unmatched too long — freeze
+            // (don't track) rather than guess. Gaze processing simply
+            // isn't called, so focus/cursor hold at their last position.
+            state.landmarks = null;
+          }
+          // within the grace window: do nothing this frame, keep last UI state
+        }
+      } else {
+        // No lock established (shouldn't normally happen outside person-select,
+        // but fall back safely to the first detected face rather than crashing).
+        const lm = allFaces[0];
+        state.landmarks = lm;
+        processBlink(lm);
+        processGaze(lm);
+      }
+    } catch (e) {
+      // A single bad frame (e.g. DOM mid-transition while a video opens)
+      // must never be allowed to take down the whole tracking pipeline.
+      console.error('onFaceResults frame error (ignored):', e);
+    }
+  }
+
+  /* ---------------------------------------------------------------------
+   * BLINK DETECTION (adaptive — no fixed magic threshold)
+   * Continuously learns the person's own open-eye EAR baseline, then a
+   * blink is "EAR drops well below MY normal open-eye level". This makes
+   * it work consistently across different eyes/cameras/lighting instead
+   * of relying on one hardcoded number.
+   * ------------------------------------------------------------------- */
+  function smoothedEAR(rawEAR) {
+    state.earHistory.push(rawEAR);
+    if (state.earHistory.length > EAR_SMOOTH_FRAMES) state.earHistory.shift();
+    return state.earHistory.reduce((a, b) => a + b, 0) / state.earHistory.length;
+  }
+
+  function processBlink(lm) {
+    const leftEAR = ear(lm, LEFT_EAR_IDX);
+    const rightEAR = ear(lm, RIGHT_EAR_IDX);
+    const rawAvg = (leftEAR + rightEAR) / 2;
+    const avgEAR = smoothedEAR(rawAvg);
+    const now = performance.now();
+
+    // Slowly track the open-eye baseline whenever eyes are clearly open
+    // and stable (so the baseline doesn't get dragged down by blinks
+    // themselves or by transient noise).
+    if (!state.isBlinking) {
+      if (state.earBaseline === null) {
+        state.earBaseline = avgEAR;
+      } else if (avgEAR > state.earBaseline * 0.9) {
+        // ease the baseline toward the current open-eye reading
+        state.earBaseline = state.earBaseline * 0.97 + avgEAR * 0.03;
+      }
+    }
+
+    const closeThreshold = (state.earBaseline || 0.3) * BLINK_RATIO;
+
+    if (avgEAR < closeThreshold) {
+      if (!state.isBlinking) {
+        state.isBlinking = true;
+        state.blinkStart = now;
+      }
+    } else if (state.isBlinking) {
+      const duration = now - state.blinkStart;
+      state.isBlinking = false;
+      if (duration >= BLINK_MIN_MS && duration <= BLINK_MAX_MS) {
+        handleIntentionalBlink();
+      }
+    }
+  }
+
+  function handleIntentionalBlink() {
+    if (state.calibrating) return; // calibration confirms via tap, not blink
+    const now = performance.now();
+    if (now < state.postSelectLockUntil) return; // short cooldown after a selection just fired
+    if (now - state.lastSelectTime < 500) return; // debounce double-fire
+    if (!state.focusedEl) return;
+    if (now - state.focusStart < MIN_FOCUS_BEFORE_SELECT_MS) return;
+    state.lastSelectTime = now;
+    state.postSelectLockUntil = now + POST_SELECT_LOCKOUT_MS;
+    selectElement(state.focusedEl);
+  }
+
+  /* ---------------------------------------------------------------------
+   * GAZE PROCESSING — purely drives focus highlighting. No visible
+   * cursor/dot is ever rendered; the only feedback is the glow on the
+   * focused UI element itself.
+   * ------------------------------------------------------------------- */
+  let lastFrameTime = performance.now();
+
+  function processGaze(lm) {
+    const now = performance.now();
+    const dt = Math.max((now - lastFrameTime) / 1000, 1 / 60);
+    lastFrameTime = now;
+
+    // Freeze everything while the eyes are closed — iris landmarks are
+    // unreliable mid-blink and were causing the focus point to jump.
+    if (state.isBlinking) return;
+
+    const [gx, gy] = computeGazeFeature(lm);
+
+    // Always keep a short rolling buffer of recent raw gaze features so
+    // calibration taps can use "what was I looking at just now".
+    state.calibSampleBuffer.push([gx, gy]);
+    if (state.calibSampleBuffer.length > 8) state.calibSampleBuffer.shift();
+
+    if (state.calibrating || !state.calibrated) return;
+
+    // Step 1: median-filter the last few raw frames per axis. This removes
+    // single-frame iris-detection glitches — the main source of the
+    // high-frequency "vibration" / option-to-option jumping — before the
+    // signal ever reaches the calibration mapping or the One-Euro filter.
+    const mgx = pushMedian(state.rawMedianBufX, gx, RAW_MEDIAN_WINDOW);
+    const mgy = pushMedian(state.rawMedianBufY, gy, RAW_MEDIAN_WINDOW);
+
+    const sx = applyRegression(state.regressionX, mgx, mgy);
+    const sy = applyRegression(state.regressionY, mgx, mgy);
+
+    // Step 2: reject single-frame jumps bigger than is physically possible
+    // for one camera frame (residual blink edge / momentary tracking loss).
+    // Instead of snapping the focus there, keep the previous raw target.
+    const W = window.innerWidth, H = window.innerHeight;
+    const diag = Math.hypot(W, H);
+    const jump = Math.hypot(sx - state.rawGaze.x, sy - state.rawGaze.y);
+    if (jump < diag * MAX_JUMP_FRACTION) {
+      state.rawGaze = { x: sx, y: sy };
+    }
+
+    const [fx, fy] = state.oneEuro.filter(state.rawGaze.x, state.rawGaze.y, dt);
+
+    const clampedX = Math.min(Math.max(fx, 0), window.innerWidth);
+    const clampedY = Math.min(Math.max(fy, 0), window.innerHeight);
+    state.smoothedGaze = { x: clampedX, y: clampedY };
+
+    renderCursor(clampedX, clampedY);
+    hitTest(clampedX, clampedY);
+  }
+
+  /* ---------------------------------------------------------------------
+   * VISIBLE GAZE CURSOR — pure rendering layer. Always shows exactly the
+   * same point that drives hit-testing (state.smoothedGaze), so turning
+   * the cursor on/off never changes tracking behavior or stability.
+   * ------------------------------------------------------------------- */
+  const gazeCursorEl = document.getElementById('gazeCursor');
+
+  function renderCursor(x, y) {
+    if (!gazeCursorEl) return;
+    gazeCursorEl.style.transform = `translate(${x}px, ${y}px)`;
+  }
+
+  function setCursorVisible(visible) {
+    if (!gazeCursorEl) return;
+    gazeCursorEl.classList.toggle('active', visible);
+  }
+
+  /* ---------------------------------------------------------------------
+   * DWELL / FOCUS / SELECTION (hit-testing gaze-target elements)
+   *
+   * PERFORMANCE NOTE: this used to call querySelectorAll(...) plus a fresh
+   * getBoundingClientRect() per visible target on every single camera
+   * frame (~30/sec). On a keyboard screen with 30+ keys that's 900+ layout
+   * reads a second just for hit-testing, which is the single biggest
+   * "the page feels laggy" cost outside of MediaPipe itself on low-end
+   * devices/Netlify. Instead we cache the target list + rects and only
+   * recompute them when the visible layout actually changes (navigation,
+   * window resize, or a screen re-rendering its own content like the
+   * member list or YouTube results) — hit-testing itself stays a cheap
+   * in-memory loop every frame.
+   * ------------------------------------------------------------------- */
+  let cachedTargets = [];
+  let cachedRects = [];
+  let targetsCacheDirty = true;
+
+  function invalidateTargetsCache() { targetsCacheDirty = true; }
+
+  function rebuildTargetsCache() {
+    const playerOverlay = document.getElementById('ytPlayerOverlay');
+    let scope;
+    if (playerOverlay && !playerOverlay.classList.contains('hidden')) {
+      scope = playerOverlay;
+    } else {
+      scope = document.querySelector('.layout.active-layout');
+    }
+    cachedTargets = scope ? Array.from(scope.querySelectorAll('.gaze-target')) : [];
+    cachedRects = cachedTargets.map(el => el.getBoundingClientRect());
+    targetsCacheDirty = false;
+  }
+
+  function getActiveTargetsWithRects() {
+    if (targetsCacheDirty) rebuildTargetsCache();
+    return { targets: cachedTargets, rects: cachedRects };
+  }
+
+  function hitTest(x, y) {
+    const { targets, rects } = getActiveTargetsWithRects();
+    let hit = null;
+    // Walk in reverse DOM order so a nested, more-specific target (e.g. the
+    // remove button inside a member row) wins over its larger ancestor
+    // container when both bounding boxes contain the gaze point.
+    for (let i = targets.length - 1; i >= 0; i--) {
+      const r = rects[i];
+      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) { hit = targets[i]; break; }
+    }
+
+    // Hysteresis: if gaze momentarily leaves the focused target (one noisy
+    // frame, a near-edge wobble), don't drop focus immediately. Only switch
+    // away once it's been off-target for longer than the grace window. This
+    // is what stops the highlight from flickering rapidly between two
+    // neighboring letters/options.
+    const now = performance.now();
+    if (hit === state.focusedEl) {
+      state.focusLeaveAt = null;
+      setFocus(hit);
+      return;
+    }
+    if (!hit && state.focusedEl) {
+      if (state.focusLeaveAt === null) {
+        state.focusLeaveAt = now;
+        return; // keep current focus for now, give it a chance to come back
+      }
+      if (now - state.focusLeaveAt < FOCUS_LEAVE_GRACE_MS) {
+        return; // still within grace window — keep current focus
+      }
+    }
+    state.focusLeaveAt = null;
+    setFocus(hit);
+  }
+
+  function setFocus(el) {
+    if (el === state.focusedEl) {
+      if (el && !state.progressApplied && performance.now() - state.focusStart >= DWELL_TO_PROGRESS_MS) {
+        el.classList.add('gaze-progress');
+        state.progressApplied = true;
+        if (gazeCursorEl) gazeCursorEl.classList.add('dwell');
+      }
+      return;
+    }
+    if (state.focusedEl) {
+      state.focusedEl.classList.remove('gaze-focus', 'gaze-progress');
+    }
+    state.focusedEl = el;
+    state.focusStart = performance.now();
+    state.progressApplied = false;
+    if (gazeCursorEl) gazeCursorEl.classList.remove('dwell');
+    if (el) el.classList.add('gaze-focus');
+  }
+
+  function selectElement(el) {
+    el.classList.add('gaze-selected');
+    setTimeout(() => el.classList.remove('gaze-selected'), 350);
+    if (gazeCursorEl) {
+      gazeCursorEl.classList.remove('dwell');
+      gazeCursorEl.classList.add('clicked');
+      setTimeout(() => gazeCursorEl.classList.remove('clicked'), 350);
+    }
+    dispatchAction(el);
+  }
+
+  /* ---------------------------------------------------------------------
+   * PERSON-SELECT STEP — runs once before calibration (and again on
+   * Recalibrate). Shows every face the camera currently sees as a tappable
+   * box; whichever box is tapped becomes the locked patient via its face
+   * descriptor. If only one face is visible, it auto-suggests that face
+   * with a single confirm tap instead of forcing a pointless selection.
+   * ------------------------------------------------------------------- */
+  const personSelectOverlay = document.getElementById('personSelectOverlay');
+  const personSelectVideo = document.getElementById('personSelectVideo');
+  const faceBoxLayer = document.getElementById('faceBoxLayer');
+  const personSelectTitle = document.getElementById('personSelectTitle');
+  const personSelectSub = document.getElementById('personSelectSub');
+  const personSelectHint = document.getElementById('personSelectHint');
+  const personSelectConfirmRow = document.getElementById('personSelectConfirmRow');
+  const personSelectConfirmBtn = document.getElementById('personSelectConfirmBtn');
+  const personSelectRetryBtn = document.getElementById('personSelectRetryBtn');
+
+  let pendingPickDescriptor = null; // descriptor of the face currently tapped/auto-suggested, awaiting confirm
+
+  async function beginPersonSelect() {
+    state.selectingPerson = true;
+    state.lockedDescriptor = null;
+    state.lockedFaceIndex = null;
+    state.lockLostSince = null;
+    pendingPickDescriptor = null;
+    await setMultiFaceMode(true);
+
+    personSelectOverlay.classList.remove('hidden');
+    personSelectConfirmRow.classList.add('hidden');
+    personSelectTitle.textContent = 'Who is the patient?';
+    personSelectSub.textContent = 'Looking for faces…';
+    personSelectHint.textContent = '';
+    faceBoxLayer.innerHTML = '';
+
+    // Mirror the live camera feed into the selection stage so the boxes
+    // line up with what's actually in frame right now.
+    if (state.stream) personSelectVideo.srcObject = state.stream;
+
+    // Render immediately using whatever faces we already have (instead of
+    // waiting for the next camera frame), so the boxes don't appear blank
+    // for a beat right after the overlay opens.
+    updatePersonSelectBoxes(state.allFaces || []);
+  }
+
+  function updatePersonSelectBoxes(allFaces) {
+    if (!state.selectingPerson) return;
+    faceBoxLayer.innerHTML = '';
+
+    if (!allFaces.length) {
+      personSelectSub.textContent = 'No face detected yet — make sure the patient is facing the camera.';
+      personSelectConfirmRow.classList.add('hidden');
+      return;
+    }
+
+    if (allFaces.length === 1) {
+      personSelectSub.textContent = 'One person detected.';
+    } else {
+      personSelectSub.textContent = `${allFaces.length} people detected. Tap the patient's face.`;
+    }
+
+    allFaces.forEach((lm, i) => {
+      // Bounding box from landmark extents (mirrored to match the
+      // mirrored video element).
+      let minX = 1, maxX = 0, minY = 1, maxY = 0;
+      for (const p of lm) {
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.y > maxY) maxY = p.y;
+      }
+      const pad = 0.04;
+      minX = Math.max(0, minX - pad); maxX = Math.min(1, maxX + pad);
+      minY = Math.max(0, minY - pad); maxY = Math.min(1, maxY + pad);
+      // mirror horizontally since the video is CSS-flipped for the selfie view
+      const leftFrac = 1 - maxX;
+      const widthFrac = maxX - minX;
+
+      const box = document.createElement('div');
+      box.className = 'face-box';
+      box.style.left = (leftFrac * 100) + '%';
+      box.style.top = (minY * 100) + '%';
+      box.style.width = (widthFrac * 100) + '%';
+      box.style.height = ((maxY - minY) * 100) + '%';
+
+      const label = document.createElement('span');
+      label.className = 'face-box-label';
+      label.textContent = allFaces.length > 1 ? `Person ${i + 1}` : 'Patient';
+      box.appendChild(label);
+
+      const desc = faceDescriptor(lm);
+      if (pendingPickDescriptor && descriptorDistance(desc, pendingPickDescriptor) < FACE_MATCH_MAX_DIST) {
+        box.classList.add('picked');
+      }
+
+      box.addEventListener('pointerdown', (ev) => {
+        ev.stopPropagation();
+        pickPerson(desc, allFaces.length);
+      });
+
+      faceBoxLayer.appendChild(box);
+    });
+
+    // Auto-suggest when exactly one person is visible and nothing has been
+    // picked yet — patient doesn't need an extra tap in the common case.
+    if (allFaces.length === 1 && !pendingPickDescriptor) {
+      pickPerson(faceDescriptor(allFaces[0]), 1);
+    }
+  }
+
+  function pickPerson(descriptor, totalFaces) {
+    pendingPickDescriptor = descriptor;
+    personSelectConfirmRow.classList.remove('hidden');
+    if (totalFaces <= 1) {
+      personSelectTitle.textContent = 'Is this the patient?';
+      personSelectHint.textContent = 'Confirm to continue, or tap "No" if the camera sees the wrong person.';
+    } else {
+      personSelectTitle.textContent = 'Confirm selection';
+      personSelectHint.textContent = 'This person will be locked in as the patient for tracking.';
+    }
+  }
+
+  personSelectConfirmBtn.addEventListener('click', async () => {
+    if (!pendingPickDescriptor) return;
+    state.lockedDescriptor = pendingPickDescriptor;
+    state.lockedFaceIndex = null;
+    state.lockLostSince = null;
+    state.selectingPerson = false;
+    personSelectOverlay.classList.add('hidden');
+    await setMultiFaceMode(false); // drop back to single-face mode — cheaper per-frame, fixes lag
+    beginCalibration();
+  });
+
+  personSelectRetryBtn.addEventListener('click', () => {
+    pendingPickDescriptor = null;
+    personSelectConfirmRow.classList.add('hidden');
+    personSelectTitle.textContent = 'Who is the patient?';
+    personSelectHint.textContent = '';
+    // Re-render current boxes as un-picked
+    if (state.allFaces) updatePersonSelectBoxes(state.allFaces);
+  });
+
+  /* ---------------------------------------------------------------------
+   * CALIBRATION FLOW — tap-to-confirm.
+   * Patient (or assisting caregiver) holds gaze on the glowing dot and
+   * taps/clicks anywhere on screen 5 times while fixating. Each tap grabs
+   * a snapshot of the recent raw gaze feature buffer; once 5 taps land
+   * for the current point, it's locked in and calibration advances.
+   * ------------------------------------------------------------------- */
+  const calibOverlay = document.getElementById('calibrationOverlay');
+  const calibDot = document.getElementById('calibDot');
+  const calibProgressBar = document.getElementById('calibProgressBar');
+  const calibTapCounter = document.getElementById('calibTapCounter');
+
+  function beginCalibration() {
+    state.calibrating = true;
+    state.calibIndex = 0;
+    state.calibTapCount = 0;
+    state.calibSamples = [];
+    state.pointTapAccum = [];
+    calibOverlay.classList.remove('hidden');
+    setCursorVisible(false);
+    showCalibPoint();
+  }
+
+  function showCalibPoint() {
+    const [px, py] = CALIB_POINTS[state.calibIndex];
+    const x = px * window.innerWidth;
+    const y = py * window.innerHeight;
+    calibDot.style.left = (x - 13) + 'px';
+    calibDot.style.top = (y - 13) + 'px';
+    calibDot.classList.remove('locking');
+    state.calibTapCount = 0;
+    state.pointTapAccum = [];
+    updateTapCounter();
+    calibProgressBar.style.width = `${(state.calibIndex / CALIB_POINTS.length) * 100}%`;
+  }
+
+  function updateTapCounter() {
+    if (calibTapCounter) calibTapCounter.textContent = `Taps: ${state.calibTapCount} / ${CALIB_TAPS_REQUIRED}`;
+  }
+
+  function onCalibrationTap() {
+    if (!state.calibrating) return;
+    if (state.calibSampleBuffer.length < 2) return; // need at least a couple frames of recent gaze data
+
+    const avg = state.calibSampleBuffer.reduce((acc, p) => [acc[0] + p[0], acc[1] + p[1]], [0, 0])
+      .map(v => v / state.calibSampleBuffer.length);
+    state.pointTapAccum.push(avg);
+    state.calibTapCount++;
+    updateTapCounter();
+
+    // brief visual pulse per tap
+    calibDot.classList.add('locking');
+    setTimeout(() => calibDot.classList.remove('locking'), 150);
+
+    if (state.calibTapCount >= CALIB_TAPS_REQUIRED) {
+      const merged = state.pointTapAccum.reduce((acc, p) => [acc[0] + p[0], acc[1] + p[1]], [0, 0])
+        .map(v => v / state.pointTapAccum.length);
+      const [px, py] = CALIB_POINTS[state.calibIndex];
+      state.calibSamples.push({
+        raw: merged,
+        screen: { x: px * window.innerWidth, y: py * window.innerHeight },
+      });
+
+      setTimeout(() => {
+        state.calibIndex++;
+        if (state.calibIndex >= CALIB_POINTS.length) {
+          finishCalibration();
+        } else {
+          showCalibPoint();
+        }
+      }, 350);
+    }
+  }
+
+  calibOverlay.addEventListener('pointerdown', onCalibrationTap);
+
+  function finishCalibration() {
+    state.regressionX = solveLeastSquares(state.calibSamples, 'x');
+    state.regressionY = solveLeastSquares(state.calibSamples, 'y');
+    state.calibrated = true;
+    state.calibrating = false;
+    // Fresh start for live tracking: clear any noise accumulated during
+    // calibration itself so the first live frames aren't dragged by stale
+    // filter state.
+    state.rawMedianBufX = [];
+    state.rawMedianBufY = [];
+    state.oneEuro = makeOneEuro({ minCutoff: 0.45, beta: 0.004, dCutoff: 1.0 });
+    state.rawGaze = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    calibProgressBar.style.width = '100%';
+    setCursorVisible(true);
+    setTimeout(() => {
+      calibOverlay.classList.add('hidden');
+    }, 300);
+  }
+
+  /* ---------------------------------------------------------------------
+   * LAYOUT ROUTER
+   * ------------------------------------------------------------------- */
+  function gotoLayout(id) {
+    document.querySelectorAll('.layout').forEach(l => l.classList.remove('active-layout'));
+    const target = document.getElementById(id);
+    if (target) target.classList.add('active-layout');
+    if (state.focusedEl) state.focusedEl.classList.remove('gaze-focus', 'gaze-progress');
+    state.focusedEl = null;
+    state.focusLeaveAt = null;
+    state.progressApplied = false;
+    invalidateTargetsCache();
+  }
+
+  /* ---------------------------------------------------------------------
+   * ACTION DISPATCH (data-action attributes on gaze-targets)
+   * ------------------------------------------------------------------- */
+  function speak(text) {
+    try {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 0.95;
+      utter.volume = 1;
+      window.speechSynthesis.speak(utter);
+    } catch (e) { console.error('TTS error', e); }
+    showSpeakToast(text);
+  }
+
+  function showSpeakToast(text) {
+    const toast = document.getElementById('speakToast');
+    toast.textContent = `🔊 “${text}”`;
+    toast.classList.remove('hidden');
+    clearTimeout(toast._hideTimer);
+    toast._hideTimer = setTimeout(() => toast.classList.add('hidden'), 2600);
+  }
+
+  function dispatchAction(el) {
+    const action = el.dataset.action;
+    switch (action) {
+      case 'speak':
+        speak(el.dataset.phrase);
+        break;
+      case 'goto':
+        gotoLayout(el.dataset.target);
+        if (el.dataset.target === 'layoutYoutube') refreshYtKeySetupVisibility();
+        if (el.dataset.target === 'layoutEspSettings') { espIpBuffer = ''; renderEspIpField(); setEspIpStatus('', ''); }
+        break;
+      case 'key':
+        handleKeyPress(el);
+        break;
+      case 'search':
+        gotoLayout('layoutYtSearch');
+        break;
+      case 'scroll':
+        scrollYoutubePlayer(el.dataset.dir);
+        break;
+      case 'scrollgrid':
+        scrollResultsGrid(el.dataset.dir);
+        break;
+      case 'recalibrate':
+        beginPersonSelect();
+        break;
+      case 'toggle-device':
+        toggleDevice(el.dataset.device);
+        break;
+      case 'ha-all-off':
+        allDevices(false);
+        break;
+      case 'ha-all-on':
+        allDevices(true);
+        break;
+      case 'chat-send':
+        doSendChat();
+        break;
+      case 'chat-clear':
+        chatBuffer=''; updateChatPreview();
+        break;
+      case 'chat-key':
+        el._onPress && el._onPress();
+        break;
+      case 'esp-key':
+        el._onPress && el._onPress();
+        break;
+      case 'open-member-chat':
+        openMemberChat(el.dataset.chatid);
+        break;
+      case 'open-group-chat':
+        openGroupChat();
+        break;
+      case 'remove-member':
+        removeMember(el.dataset.chatid);
+        renderMemberList();
+        break;
+      case 'addmember-field':
+        setAddMemberField(el.dataset.field);
+        break;
+      case 'addmember-save':
+        addMemberSave();
+        break;
+      case 'addmember-clear':
+        addMemberClearAll();
+        break;
+      case 'addmember-key':
+        el._onPress && el._onPress();
+        break;
+      case 'espsettings-save':
+        espSettingsSave();
+        break;
+      case 'espsettings-test':
+        espSettingsTest();
+        break;
+      case 'espsettings-clear':
+        espSettingsClear();
+        break;
+      case 'hasettings-key':
+        el._onPress && el._onPress();
+        break;
+      case 'savekey':
+        break;
+      case 'playvideo':
+        playVideoAt(parseInt(el.dataset.index, 10));
+        break;
+      case 'closeplayer':
+        closePlayer();
+        break;
+      default:
+        break;
+    }
+  }
+
+  /* ---------------------------------------------------------------------
+   * VIRTUAL KEYBOARDS
+   * One shared layout definition + helpers used by every gaze-typing
+   * surface in the app (Keyboard Mode, YouTube Search, Message Members,
+   * Add Member, HA Settings) so they all look and behave identically —
+   * same row structure, same key sizing, same CLEAR/BACK behavior.
+   * ------------------------------------------------------------------- */
+  const KEY_ROWS = [
+    ['1','2','3','4','5','6','7','8','9','0'],
+    ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+    ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', "'"],
+    ['Z', 'X', 'C', 'V', 'B', 'N', 'M', '.', ',', '?'],
+    [':', '/', '-', '_', '@'],
+  ];
+
+  /**
+   * Lays out KEY_ROWS into real keyboard rows (.kb-row) inside gridEl,
+   * calling addK(label, wide, extraClass, onPress) for every key. Shared
+   * by every keyboard on the app so they all share one row structure.
+   */
+  function buildStandardTypingRows(addK, onChar) {
+    const gridEl = addK._gridEl;
+    KEY_ROWS.forEach((row, i) => {
+      const rowEl = document.createElement('div');
+      rowEl.className = 'kb-row';
+      gridEl.appendChild(rowEl);
+      row.forEach(ch => addK(ch, false, i === 0 ? 'key-digit' : '', () => onChar(ch), rowEl));
+    });
+  }
+
+  /**
+   * Adds the bottom action row (SPACE / BACK / CLEAR / HOME / SPEAK-or-OK)
+   * shared by every keyboard. `onSubmit` is optional — keyboards that just
+   * write into a field (chat, add-member, HA settings) omit it and get a
+   * plain "DONE" key instead of "SPEAK / OK".
+   */
+  function addStandardActionRow(addK, { onSpace, onBack, onClear, onHome, onSubmit, submitLabel = 'SPEAK / OK' }) {
+    const gridEl = addK._gridEl;
+    const rowEl = document.createElement('div');
+    rowEl.className = 'kb-row kb-row-actions';
+    gridEl.appendChild(rowEl);
+    addK('SPACE', true, 'key-action', onSpace, rowEl);
+    addK('BACK', false, 'key-action', onBack, rowEl);
+    addK('CLEAR', false, 'key-action key-clear', onClear, rowEl);
+    addK('HOME', false, 'key-action', onHome, rowEl);
+    if (onSubmit) addK(submitLabel, true, 'key-action key-speak', onSubmit, rowEl);
+  }
+
+  function buildKeyboard(gridEl, outputEl, onSubmit, onHome) {
+    gridEl.innerHTML = '';
+    let buffer = '';
+
+    function render() { outputEl.textContent = buffer || '\u00A0'; }
+    render();
+
+    function addKey(label, wide, className, onPress, rowEl) {
+      const btn = document.createElement('button');
+      btn.className = `key gaze-target ${wide ? 'key-wide' : ''} ${className || ''}`;
+      btn.textContent = label;
+      btn.dataset.action = 'key';
+      btn._onPress = onPress;
+      (rowEl || gridEl).appendChild(btn);
+      return btn;
+    }
+    addKey._gridEl = gridEl;
+
+    buildStandardTypingRows(addKey, ch => { buffer += ch; render(); });
+    addStandardActionRow(addKey, {
+      onSpace: () => { buffer += ' '; render(); },
+      onBack: () => { buffer = buffer.slice(0, -1); render(); },
+      onClear: () => { buffer = ''; render(); },
+      onHome: () => { buffer = ''; render(); onHome(); },
+      onSubmit: () => { if (buffer.trim()) onSubmit(buffer.trim()); },
+    });
+
+    return {
+      handlePress(el) { el._onPress && el._onPress(); },
+      clear() { buffer = ''; render(); },
+    };
+  }
+
+  let keyboardCtl = null;
+  let ytKeyboardCtl = null;
+
+  function handleKeyPress(el) {
+    const parentGrid = el.closest('.keyboard-grid');
+    if (parentGrid && parentGrid.id === 'keyboardGrid' && keyboardCtl) keyboardCtl.handlePress(el);
+    if (parentGrid && parentGrid.id === 'ytKeyboardGrid' && ytKeyboardCtl) ytKeyboardCtl.handlePress(el);
+  }
+
+  function initKeyboards() {
+    keyboardCtl = buildKeyboard(
+      document.getElementById('keyboardGrid'),
+      document.getElementById('typedOutput'),
+      (text) => speak(text),
+      () => gotoLayout('layoutHome'),
+    );
+
+    ytKeyboardCtl = buildKeyboard(
+      document.getElementById('ytKeyboardGrid'),
+      document.getElementById('ytTypedOutput'),
+      (text) => { runYoutubeSearch(text); gotoLayout('layoutYoutube'); },
+      () => gotoLayout('layoutYoutube'),
+    );
+  }
+
+  /* ---------------------------------------------------------------------
+   * YOUTUBE SEARCH — uses the YouTube Data API v3 (a free key the
+   * caregiver enters once). The old no-key "listType=search" embed trick
+   * is blocked by YouTube now and always showed "video unavailable", so
+   * this is the only reliable client-only option without a backend.
+   * The key is stored in this browser only (localStorage), never sent
+   * anywhere except directly to Google's API.
+   * ------------------------------------------------------------------- */
+  const ytKeySetup = document.getElementById('ytKeySetup');
+  const ytKeyInput = document.getElementById('ytKeyInput');
+  const ytResults = document.getElementById('ytResults');
+  const ytEmptyMsg = document.getElementById('ytEmptyMsg');
+  const ytSearchLabel = document.getElementById('ytSearchLabel');
+  const ytPlayerOverlay = document.getElementById('ytPlayerOverlay');
+  const ytPlayer = document.getElementById('ytPlayer');
+
+  let ytSearchResults = []; // [{id, title, thumb}]
+  let ytCurrentIndex = -1;
+
+  const YT_API_KEY = 'AIzaSyChGjm973qTplF24T5VYYh0m_fAFVbDnjw';
+  function getYtApiKey() { return YT_API_KEY; }
+
+  function refreshYtKeySetupVisibility() {
+    if (ytKeySetup) ytKeySetup.classList.add('hidden');
+  }
+
+  async function runYoutubeSearch(query) {
+    const key = getYtApiKey();
+    ytSearchLabel.textContent = `🔍 ${query}`;
+    if (!key) {
+      refreshYtKeySetupVisibility();
+      ytResults.innerHTML = '<p class="yt-empty yt-error">Add a YouTube API key above first, then search again.</p>';
+      return;
+    }
+    ytResults.innerHTML = '<p class="yt-empty yt-loading">Searching YouTube…</p>';
+    try {
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=12&q=${encodeURIComponent(query)}&key=${encodeURIComponent(key)}`;
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`YouTube API error ${resp.status}`);
+      const data = await resp.json();
+      ytSearchResults = (data.items || []).map(item => ({
+        id: item.id.videoId,
+        title: item.snippet.title,
+        thumb: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url,
+      })).filter(v => v.id);
+      renderYtResults();
+    } catch (err) {
+      console.error('YouTube search error', err);
+      ytResults.innerHTML = '<p class="yt-empty yt-error">Search failed. Check your connection and try again.</p>';
+    }
+  }
+
+  function renderYtResults() {
+    if (!ytSearchResults.length) {
+      ytResults.innerHTML = '<p class="yt-empty">No results found. Try a different search.</p>';
+      return;
+    }
+    ytResults.innerHTML = '';
+    // Build with a fragment + lazy-loaded images so dropping 12 thumbnails
+    // into the DOM at once doesn't cause a visible jank/decode spike on
+    // slower devices.
+    const frag = document.createDocumentFragment();
+    ytSearchResults.forEach((video, idx) => {
+      const tile = document.createElement('div');
+      tile.className = 'yt-video-tile gaze-target';
+      tile.dataset.action = 'playvideo';
+      tile.dataset.index = String(idx);
+      tile.innerHTML =
+        `<div class="yt-thumb-wrap"><img src="${video.thumb}" alt="" loading="lazy" decoding="async" /><span class="yt-play-badge">▶</span></div>` +
+        `<div class="yt-title">${escapeHtml(video.title)}</div>`;
+      frag.appendChild(tile);
+    });
+    ytResults.appendChild(frag);
+    invalidateTargetsCache();
+  }
+
+  function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  function playVideoAt(index) {
+    if (index < 0 || index >= ytSearchResults.length) return;
+    ytCurrentIndex = index;
+    const video = ytSearchResults[index];
+    ytPlayer.src = `https://www.youtube.com/embed/${video.id}?autoplay=1&enablejsapi=1`;
+    const titleEl = document.getElementById('ytNowPlayingTitle');
+    if (titleEl) titleEl.textContent = video.title;
+    ytPlayerOverlay.classList.remove('hidden');
+    state.lastResultsAt = performance.now(); // grace window through the transition
+    invalidateTargetsCache();
+  }
+
+  function closePlayer() {
+    ytPlayer.src = '';
+    ytPlayerOverlay.classList.add('hidden');
+    state.lastResultsAt = performance.now(); // grace window through the transition
+    invalidateTargetsCache();
+  }
+
+  function scrollYoutubePlayer(dir) {
+    const next = dir === 'up' ? ytCurrentIndex - 1 : ytCurrentIndex + 1;
+    playVideoAt(next);
+  }
+
+  function scrollResultsGrid(dir) {
+    const amount = dir === 'up' ? -240 : 240;
+    ytResults.scrollBy({ top: amount, behavior: 'smooth' });
+  }
+
+  /* ---------------------------------------------------------------------
+   * CLICK FALLBACK (mouse/touch) — accessibility for caregivers/testing.
+   * Gaze targets remain fully operable via mouse/touch as a fallback input.
+   * ------------------------------------------------------------------- */
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest('.gaze-target');
+    if (target) dispatchAction(target);
+  });
+
+  /* ---------------------------------------------------------------------
+   * RESIZE HANDLING
+   * ------------------------------------------------------------------- */
+  window.addEventListener('resize', () => {
+    state.smoothedGaze = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    invalidateTargetsCache();
+  });
+
+  /* ---------------------------------------------------------------------
+   * BOOT
+   * ------------------------------------------------------------------- */
+
+  /* ===== CONFIG ===== */
+  const TG_BOT_TOKEN = '8759223390:AAF5pwSFcU7TXTjuoYhzGYc_-96ULy1WuBE';
+
+  // ===== DIRECT ESP8266 CONTROL (Web → ESP8266 HTTP) =====
+  // Primary:  http://esp8266home.local  (mDNS — works on same WiFi always)
+  // Backup:   user can type IP manually via ESP8266 IP Settings page
+  const ESP8266_MDNS   = 'http://esp8266home.local';
+  const ESP8266_IP_KEY = 'voiceeye_esp8266_ip_v1';
+
+  function loadEsp8266Host() {
+    try {
+      const saved = localStorage.getItem(ESP8266_IP_KEY);
+      return (saved && saved.trim()) ? saved.trim() : ESP8266_MDNS;
+    } catch(e) { return ESP8266_MDNS; }
+  }
+  function saveEsp8266Host(url) {
+    const clean = url.trim().replace(/\/+$/, '');
+    if (!clean) return false;
+    try { localStorage.setItem(ESP8266_IP_KEY, clean); } catch(e) {}
+    esp8266Host = clean;
+    return true;
+  }
+
+  let esp8266Host = loadEsp8266Host();
+
+  const deviceState = {
+    'light': false,
+    'fan':   false,
+  };
+  const DEVICE_TILE_MAP = {
+    'light': { tile:'tile_light1', status:'status_light1' },
+    'fan':   { tile:'tile_fan1',   status:'status_fan1'   },
+  };
+
+  let haConnected = null;
+
+  async function esp8266Send(device, state) {
+    try {
+      await fetch(`${esp8266Host}/control?device=${device}&state=${state}`,
+        { method:'GET', mode:'no-cors', signal: AbortSignal.timeout(4000) });
+      updateHAStatus(true);
+      return true;
+    } catch(e) {
+      // mDNS failed — try nothing, user can set IP in settings
+      updateHAStatus(false);
+      return false;
+    }
+  }
+
+  function pulseTile(key) {
+    const m = DEVICE_TILE_MAP[key]; if (!m) return;
+    const tile = document.getElementById(m.tile); if (!tile) return;
+    tile.classList.remove('pulsing'); void tile.offsetWidth;
+    tile.classList.add('pulsing');
+    setTimeout(() => tile.classList.remove('pulsing'), 350);
+  }
+
+  function updateDeviceTileUI(key, isOn) {
+    const m = DEVICE_TILE_MAP[key]; if (!m) return;
+    const tile = document.getElementById(m.tile), stat = document.getElementById(m.status);
+    if (tile) tile.classList.toggle('device-on', isOn);
+    if (stat) stat.textContent = isOn ? 'ON' : 'OFF';
+  }
+
+  function entityToKey(entityId) {
+    if (entityId.startsWith('light')) return 'light';
+    if (entityId.startsWith('switch') || entityId === 'fan') return 'fan';
+    return entityId;
+  }
+
+  async function toggleDevice(entityId) {
+    const key = entityToKey(entityId);
+    pulseTile(key);
+    const newState = !deviceState[key];
+    const ok = await esp8266Send(key, newState ? 'ON' : 'OFF');
+    if (ok) { deviceState[key] = newState; updateDeviceTileUI(key, newState); }
+  }
+
+  async function allDevices(turnOn) {
+    for (const key of Object.keys(deviceState)) {
+      pulseTile(key);
+      const ok = await esp8266Send(key, turnOn ? 'ON' : 'OFF');
+      if (ok) { deviceState[key] = turnOn; updateDeviceTileUI(key, turnOn); }
+    }
+  }
+
+  async function pollHAStates() {
+    try {
+      await fetch(`${esp8266Host}/ping`, { method:'GET', mode:'no-cors', signal: AbortSignal.timeout(3000) });
+      updateHAStatus(true);
+    } catch(e) { updateHAStatus(false); }
+  }
+
+  function updateHAStatus(ok) {
+    haConnected = ok;
+    const dot = document.getElementById('haDot'), txt = document.getElementById('haStatusText');
+    if (dot) dot.className = 'ha-dot ' + (ok ? 'ok' : 'err');
+    if (txt) txt.textContent = ok ? 'ESP8266 Connected' : 'ESP8266 Offline';
+  }
+
+  // ── ESP8266 IP Settings page logic ──────────────────────────────────
+  let espIpBuffer = '';
+
+  function renderEspIpField() {
+    const el = document.getElementById('espIpDisplay'); if (!el) return;
+    el.textContent = espIpBuffer || esp8266Host || 'Type IP below…';
+    el.classList.toggle('placeholder', !espIpBuffer && !esp8266Host);
+  }
+  function setEspIpStatus(msg, kind) {
+    const el = document.getElementById('espIpStatus'); if (!el) return;
+    el.textContent = msg;
+    el.className = 'ha-settings-status' + (kind ? ' ' + kind : '');
+  }
+  function espSettingsTypeChar(ch) { espIpBuffer += ch; renderEspIpField(); }
+  function espSettingsBackspace()  { espIpBuffer = espIpBuffer.slice(0,-1); renderEspIpField(); }
+  function espSettingsClear()      { espIpBuffer = ''; renderEspIpField(); setEspIpStatus('',''); }
+  function espSettingsSave() {
+    const val = espIpBuffer.trim();
+    if (!val) { setEspIpStatus('⚠️ IP likhun (e.g. http://192.168.0.105)', 'err'); return; }
+    saveEsp8266Host(val);
+    espIpBuffer = '';
+    renderEspIpField();
+    setEspIpStatus('✅ Saved: ' + esp8266Host, 'ok');
+  }
+  async function espSettingsTest() {
+    const host = espIpBuffer.trim() || esp8266Host;
+    if (!host) { setEspIpStatus('⚠️ IP likhun first', 'err'); return; }
+    setEspIpStatus('🔄 Testing…', '');
+    try {
+      await fetch(`${host}/ping`, { method:'GET', mode:'no-cors', signal: AbortSignal.timeout(4000) });
+      setEspIpStatus('✅ ESP8266 reachable at ' + host, 'ok');
+    } catch(e) {
+      setEspIpStatus('❌ Not reachable. Check IP and same WiFi.', 'err');
+    }
+  }
+
+  function initEspSettingsKeyboard() {
+    const grid = document.getElementById('espSettingsKeyboardGrid'); if (!grid) return;
+    grid.innerHTML = '';
+    function addK(label, wide, cls, onPress, rowEl) {
+      const btn = document.createElement('button');
+      btn.className = 'key gaze-target' + (wide ? ' key-wide' : '') + (cls ? ' ' + cls : '');
+      btn.textContent = label; btn.dataset.action = 'esp-key'; btn._onPress = onPress;
+      (rowEl || grid).appendChild(btn);
+    }
+    addK._gridEl = grid;
+    buildStandardTypingRows(addK, ch => espSettingsTypeChar(ch));
+    addStandardActionRow(addK, {
+      onSpace: () => espSettingsTypeChar(' '),
+      onBack: () => espSettingsBackspace(),
+      onHome: () => { gotoLayout('layoutSmartHome'); },
+      onClear: () => espSettingsClear(),
+    });
+  }
+
+  // Stub functions so rest of code doesn't break (old HA-URL settings code
+  // path is superseded by the ESP8266 IP Settings page above; these stubs
+  // just forward to it so nothing else in the file breaks if it's referenced).
+  let haUrlBuffer = '';
+  const HA_BASE_URL_KEY = '';
+  let HA_BASE_URL = esp8266Host;
+  function loadHaBaseUrl()  { return esp8266Host; }
+  function normalizeBaseUrl(u) { return String(u).trim().replace(/\/+$/, ''); }
+  function saveHaBaseUrl()  { return false; }
+  function renderHaUrlField()  { renderEspIpField(); }
+  function setHaUrlStatus(m,k) { setEspIpStatus(m,k); }
+  function haSettingsTypeChar(ch) { espSettingsTypeChar(ch); }
+  function haSettingsBackspace() { espSettingsBackspace(); }
+  function haSettingsClear() { espSettingsClear(); }
+  function haSettingsSave() { espSettingsSave(); }
+
+/* ===== TELEGRAM (low-level send / receive) ===== */
+  async function tgSendMessage(chatId, text) {
+    try {
+      const resp = await fetch('https://api.telegram.org/bot' + TG_BOT_TOKEN + '/sendMessage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text }),
+      });
+      return resp.ok;
+    } catch (e) { return false; }
+  }
+
+  /* ===== MEMBERS (persisted in localStorage) =====
+   * Each member: { id (=Telegram chat_id, string), name }
+   * This replaces the old single hardcoded TG_CHAT_ID array — chat IDs
+   * now come from the member list the caregiver builds in-app. */
+  const MEMBERS_KEY = 'voiceeye_members_v1';
+  const UPDATES_OFFSET_KEY = 'voiceeye_tg_offset_v1';
+
+  function loadMembers() {
+    try {
+      const raw = localStorage.getItem(MEMBERS_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) { return []; }
+  }
+  function saveMembers(list) {
+    try { localStorage.setItem(MEMBERS_KEY, JSON.stringify(list)); } catch (e) { /* storage full/unavailable, ignore */ }
+  }
+  let members = loadMembers();
+
+  function addMember(chatId, name) {
+    chatId = String(chatId).trim();
+    name = name.trim();
+    if (!chatId || !name) return false;
+    if (members.some(m => m.id === chatId)) return false; // no duplicate chat IDs
+    members.push({ id: chatId, name });
+    saveMembers(members);
+    return true;
+  }
+  function removeMember(chatId) {
+    members = members.filter(m => m.id !== chatId);
+    saveMembers(members);
+    if (conversationTargetId === chatId) conversationTargetId = null;
+  }
+  function getMember(chatId) { return members.find(m => m.id === chatId) || null; }
+
+  /* ===== CONVERSATION STATE =====
+   * conversationTargetId === null  -> "All" / group conversation
+   * conversationTargetId === '<chatId>' -> 1:1 conversation with that member
+   * Messages are kept per target so switching between a member and the
+   * group view shows the right history. */
+  let conversationTargetId = null;
+  const conversations = {}; // key: chatId or '__all__' -> array of {text, type, ts}
+  function convKey(targetId) { return targetId === null ? '__all__' : targetId; }
+  function getConvLog(targetId) {
+    const key = convKey(targetId);
+    if (!conversations[key]) conversations[key] = [];
+    return conversations[key];
+  }
+  function pushConvMessage(targetId, msg) {
+    getConvLog(targetId).push(msg);
+  }
+
+  /* ===== SENDING — individual or group, with per-member delivery status ===== */
+  async function sendToMember(chatId, text) {
+    const ok = await tgSendMessage(chatId, '\ud83d\udcac Patient Message:\n' + text);
+    setMemberDeliveryStatus(chatId, ok ? 'sent' : 'failed');
+    return ok;
+  }
+
+  async function sendToAllMembers(text) {
+    if (members.length === 0) return { anySuccess: false, results: [] };
+    members.forEach(m => setMemberDeliveryStatus(m.id, 'pending'));
+    const results = await Promise.all(members.map(async (m) => {
+      const ok = await tgSendMessage(m.id, '\ud83d\udcac Patient Message:\n' + text);
+      setMemberDeliveryStatus(m.id, ok ? 'sent' : 'failed');
+      return { id: m.id, name: m.name, ok };
+    }));
+    return { anySuccess: results.some(r => r.ok), results };
+  }
+
+  async function doSendChat() {
+    const msg = chatBuffer.trim();
+    if (!msg) return;
+    const targetId = conversationTargetId;
+
+    if (targetId === null) {
+      // Group send to every member, with per-recipient delivery tracking.
+      pushConvMessage(null, { text: msg, type: 'sent', ts: Date.now() });
+      renderConversation();
+      chatBuffer = ''; updateChatPreview();
+      const { anySuccess, results } = await sendToAllMembers(msg);
+      const failedNames = results.filter(r => !r.ok).map(r => r.name);
+      const statusText = results.length === 0
+        ? 'No members yet — add one first.'
+        : failedNames.length === 0
+          ? `Sent to all ${results.length} member(s).`
+          : `Sent, but failed for: ${failedNames.join(', ')}`;
+      pushConvMessage(null, { text: statusText, type: 'status', ts: Date.now() });
+      renderConversation();
+    } else {
+      pushConvMessage(targetId, { text: msg, type: 'sent', ts: Date.now() });
+      renderConversation();
+      chatBuffer = ''; updateChatPreview();
+      const ok = await sendToMember(targetId, msg);
+      pushConvMessage(targetId, { text: ok ? 'Delivered.' : 'Failed to send — check connection.', type: 'status', ts: Date.now() });
+      renderConversation();
+    }
+  }
+
+  /* ===== PER-MEMBER DELIVERY STATUS (shown next to each name in the list) ===== */
+  const memberDeliveryStatus = {}; // chatId -> 'pending' | 'sent' | 'failed'
+  function setMemberDeliveryStatus(chatId, status) {
+    memberDeliveryStatus[chatId] = status;
+    renderMemberList();
+  }
+
+  /* ===== TWO-WAY: poll Telegram for incoming replies (getUpdates) =====
+   * Pure client-side long-poll, same pattern as the existing send code —
+   * no backend required. Tracks an offset in localStorage so messages
+   * aren't re-delivered after a page refresh, and only routes messages
+   * that come from a chat_id already in the member list (so random
+   * strangers messaging the bot don't show up as a "member"). */
+  let tgOffset = parseInt(localStorage.getItem(UPDATES_OFFSET_KEY) || '0', 10) || 0;
+  const TG_POLL_MS = 3000;
+  let tgPolling = false;
+
+  async function pollTelegramUpdates() {
+    if (tgPolling) return; // don't overlap polls
+    tgPolling = true;
+    try {
+      const url = 'https://api.telegram.org/bot' + TG_BOT_TOKEN + '/getUpdates'
+        + '?timeout=0&offset=' + (tgOffset + 1);
+      const resp = await fetch(url);
+      if (!resp.ok) return;
+      const data = await resp.json();
+      if (!data.ok || !Array.isArray(data.result)) return;
+
+      for (const update of data.result) {
+        if (update.update_id >= tgOffset) {
+          tgOffset = update.update_id;
+        }
+        const msg = update.message;
+        if (!msg || typeof msg.text !== 'string') continue;
+        const fromChatId = String(msg.chat.id);
+        const member = getMember(fromChatId);
+        if (!member) continue; // ignore messages from chat IDs not in the member list
+
+        pushConvMessage(fromChatId, { text: msg.text, type: 'incoming', ts: Date.now(), fromName: member.name });
+        // Also surface it in the "All" view so a caregiver watching the
+        // group conversation doesn't miss a reply while focused elsewhere.
+        pushConvMessage(null, { text: msg.text, type: 'incoming', ts: Date.now(), fromName: member.name });
+
+        if (conversationTargetId === fromChatId || conversationTargetId === null) {
+          renderConversation();
+        }
+      }
+      if (data.result.length) {
+        localStorage.setItem(UPDATES_OFFSET_KEY, String(tgOffset));
+      }
+    } catch (e) { /* network hiccup — next poll tick will retry */ }
+    finally { tgPolling = false; }
+  }
+
+  /* ===== RENDER: member list ===== */
+  function renderMemberList() {
+    const list = document.getElementById('memberList');
+    if (!list) return;
+    list.innerHTML = '';
+    if (members.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'member-empty';
+      empty.textContent = 'No members yet. Look at "Add Member" to add a Telegram chat ID.';
+      list.appendChild(empty);
+      invalidateTargetsCache();
+      return;
+    }
+    members.forEach(m => {
+      const row = document.createElement('div');
+      row.className = 'member-row gaze-target';
+      row.dataset.action = 'open-member-chat';
+      row.dataset.chatid = m.id;
+
+      const avatar = document.createElement('div');
+      avatar.className = 'member-avatar';
+      avatar.textContent = (m.name.trim()[0] || '?').toUpperCase();
+
+      const info = document.createElement('div');
+      info.className = 'member-info';
+      const nameEl = document.createElement('div');
+      nameEl.className = 'member-name';
+      nameEl.textContent = m.name;
+      const idEl = document.createElement('div');
+      idEl.className = 'member-chatid';
+      idEl.textContent = 'ID: ' + m.id;
+      info.appendChild(nameEl); info.appendChild(idEl);
+
+      const status = document.createElement('div');
+      const st = memberDeliveryStatus[m.id];
+      status.className = 'member-deliverystatus ' + (st || '');
+      status.textContent = st === 'sent' ? '✓' : st === 'failed' ? '✗' : st === 'pending' ? '…' : '';
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'member-remove-btn gaze-target';
+      removeBtn.dataset.action = 'remove-member';
+      removeBtn.dataset.chatid = m.id;
+      removeBtn.textContent = '✕';
+
+      row.appendChild(avatar);
+      row.appendChild(info);
+      row.appendChild(status);
+      row.appendChild(removeBtn);
+      list.appendChild(row);
+    });
+    invalidateTargetsCache();
+  }
+
+  /* ===== RENDER: conversation (per-member or "All") ===== */
+  function renderConversation() {
+    const wrap = document.getElementById('chatMessages');
+    const pill = document.getElementById('convTargetPill');
+    if (!wrap) return;
+    const log = getConvLog(conversationTargetId);
+    if (pill) {
+      pill.textContent = conversationTargetId === null
+        ? `All (${members.length} member${members.length === 1 ? '' : 's'})`
+        : (getMember(conversationTargetId)?.name || 'Unknown member');
+    }
+    wrap.innerHTML = '';
+    if (log.length === 0) {
+      const intro = document.createElement('div');
+      intro.className = 'chat-bubble status';
+      intro.textContent = 'Gaze-type a message below, then look at SEND to deliver it via Telegram.';
+      wrap.appendChild(intro);
+    } else {
+      log.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'chat-bubble ' + m.type;
+        if (m.type === 'incoming') {
+          div.textContent = (conversationTargetId === null ? (m.fromName + ': ') : '') + m.text;
+        } else {
+          div.textContent = m.text;
+        }
+        wrap.appendChild(div);
+      });
+    }
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  function openMemberChat(chatId) {
+    conversationTargetId = chatId;
+    chatBuffer = ''; updateChatPreview();
+    renderConversation();
+    gotoLayout('layoutConversation');
+  }
+  function openGroupChat() {
+    conversationTargetId = null;
+    chatBuffer = ''; updateChatPreview();
+    renderConversation();
+    gotoLayout('layoutConversation');
+  }
+
+  /* ===== CHAT (typing buffer + keyboard, shared by conversation screen) ===== */
+  let chatBuffer = '';
+  function updateChatPreview() {
+    const el = document.getElementById('chatPreview');
+    if (el) el.textContent = chatBuffer || '...type below...';
+  }
+
+  function initChatKeyboard() {
+    const grid = document.getElementById('chatKeyboardGrid'); if (!grid) return;
+    grid.innerHTML = '';
+    function addK(label, wide, cls, onPress, rowEl) {
+      const btn = document.createElement('button');
+      btn.className = 'key gaze-target' + (wide ? ' key-wide' : '') + (cls ? ' ' + cls : '');
+      btn.textContent = label; btn.dataset.action = 'chat-key'; btn._onPress = onPress;
+      (rowEl || grid).appendChild(btn);
+    }
+    addK._gridEl = grid;
+    buildStandardTypingRows(addK, ch => { chatBuffer += ch; updateChatPreview(); });
+    addStandardActionRow(addK, {
+      onSpace: () => { chatBuffer += ' '; updateChatPreview(); },
+      onBack: () => { chatBuffer = chatBuffer.slice(0, -1); updateChatPreview(); },
+      onClear: () => { chatBuffer = ''; updateChatPreview(); },
+      onHome: () => { chatBuffer = ''; updateChatPreview(); gotoLayout('layoutHome'); },
+      onSubmit: () => doSendChat(),
+      submitLabel: 'SEND',
+    });
+  }
+
+  /* ===== ADD-MEMBER FORM (gaze keyboard writes into name OR chat-id field) ===== */
+  let addMemberName = '';
+  let addMemberChatId = '';
+  let addMemberActiveField = 'name'; // 'name' | 'chatid'
+
+  function renderAddMemberFields() {
+    const nameEl = document.getElementById('addMemberNameDisplay');
+    const idEl = document.getElementById('addMemberChatIdDisplay');
+    if (nameEl) {
+      nameEl.textContent = addMemberName || 'Type name below…';
+      nameEl.classList.toggle('placeholder', !addMemberName);
+    }
+    if (idEl) {
+      idEl.textContent = addMemberChatId || 'Type chat ID below…';
+      idEl.classList.toggle('placeholder', !addMemberChatId);
+    }
+    const tabName = document.getElementById('fieldTabName');
+    const tabChatId = document.getElementById('fieldTabChatId');
+    if (tabName) tabName.classList.toggle('active-field', addMemberActiveField === 'name');
+    if (tabChatId) tabChatId.classList.toggle('active-field', addMemberActiveField === 'chatid');
+  }
+
+  function setAddMemberField(field) {
+    addMemberActiveField = field;
+    renderAddMemberFields();
+  }
+
+  function addMemberTypeChar(ch) {
+    if (addMemberActiveField === 'name') addMemberName += ch;
+    else addMemberChatId += ch;
+    renderAddMemberFields();
+  }
+  function addMemberBackspace() {
+    if (addMemberActiveField === 'name') addMemberName = addMemberName.slice(0, -1);
+    else addMemberChatId = addMemberChatId.slice(0, -1);
+    renderAddMemberFields();
+  }
+  function addMemberClearAll() {
+    addMemberName = ''; addMemberChatId = '';
+    renderAddMemberFields();
+  }
+  function addMemberSave() {
+    const ok = addMember(addMemberChatId, addMemberName);
+    if (ok) {
+      addMemberClearAll();
+      renderMemberList();
+      gotoLayout('layoutChat');
+    } else {
+      const idEl = document.getElementById('addMemberChatIdDisplay');
+      if (idEl) {
+        idEl.textContent = 'Enter a name + unique chat ID first';
+        setTimeout(() => renderAddMemberFields(), 1400);
+      }
+    }
+  }
+
+  function initAddMemberKeyboard() {
+    const grid = document.getElementById('addMemberKeyboardGrid'); if (!grid) return;
+    grid.innerHTML = '';
+    function addK(label, wide, cls, onPress, rowEl) {
+      const btn = document.createElement('button');
+      btn.className = 'key gaze-target' + (wide ? ' key-wide' : '') + (cls ? ' ' + cls : '');
+      btn.textContent = label; btn.dataset.action = 'addmember-key'; btn._onPress = onPress;
+      (rowEl || grid).appendChild(btn);
+    }
+    addK._gridEl = grid;
+    // Letters/digits write into whichever field tab (Name / Chat ID) is active.
+    buildStandardTypingRows(addK, ch => addMemberTypeChar(ch));
+    addStandardActionRow(addK, {
+      onSpace: () => addMemberTypeChar(' '),
+      onBack: () => addMemberBackspace(),
+      onClear: () => addMemberClearAll(),
+      onHome: () => { addMemberClearAll(); gotoLayout('layoutHome'); },
+    });
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    initKeyboards();
+    initChatKeyboard();
+    initAddMemberKeyboard();
+    initEspSettingsKeyboard();
+    renderAddMemberFields();
+    renderHaUrlField();
+    renderMemberList();
+    renderConversation();
+    refreshYtKeySetupVisibility();
+    pollHAStates();
+    setInterval(pollHAStates, 10000);
+    pollTelegramUpdates();
+    setInterval(pollTelegramUpdates, TG_POLL_MS);
+    startCamera();
+  });
+})();
+
+</script>
+</body>
+</html>

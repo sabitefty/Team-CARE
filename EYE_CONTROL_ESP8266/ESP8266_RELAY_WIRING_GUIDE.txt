@@ -1,0 +1,138 @@
+==================================================================
+  ESP8266 (NodeMCU) + 2-CHANNEL RELAY - LIGHT & FAN WIRING GUIDE
+==================================================================
+
+  *** DANGER: MAINS AC (220V) VOLTAGE INVOLVED ***
+  The relay OUTPUT side (COM/NO/NC screw terminals) switches
+  220V AC mains - the same voltage that can kill you. Follow
+  these safety rules:
+
+  1. Disconnect mains power (turn off the breaker) before wiring
+     anything on the relay's AC side.
+  2. Only the LOW-VOLTAGE side (IN1, IN2, VCC, GND) connects to
+     the NodeMCU. NEVER connect NodeMCU pins to the AC side.
+  3. Use proper insulated wire, wire nuts/terminal blocks, and
+     enclose the relay + AC wiring in a proper box - don't leave
+     bare AC terminals exposed.
+  4. If you are not confident working with mains wiring, get
+     help from someone experienced with household electrical
+     work. This guide explains the logic wiring only.
+
+------------------------------------------------------------------
+1) NODEMCU <-> RELAY MODULE (LOW VOLTAGE SIDE)
+------------------------------------------------------------------
+Relay Module Pin    NodeMCU Pin      GPIO      Notes
+-----------------    -----------      ----      -----
+VCC             -->  3V3 or Vin       --        Most 2ch relay modules
+                                                 work off 3.3V, but if
+                                                 relays don't click
+                                                 reliably, power VCC
+                                                 from NodeMCU's Vin (5V)
+                                                 pin instead, and keep
+                                                 GND common.
+GND             -->  GND              --        MUST be common ground
+                                                 with NodeMCU.
+IN1 (Light)     -->  D1               GPIO5
+IN2 (Fan)       -->  D2               GPIO4
+
+  NOTE ON RELAY LOGIC:
+  Most cheap 2-channel relay boards are ACTIVE-LOW, meaning:
+    IN pin = LOW  -> relay ON  (clicks, light/fan turns on)
+    IN pin = HIGH -> relay OFF
+  The firmware already assumes ACTIVE-LOW (default setting).
+  If your relay behaves backwards (turns ON when it should be
+  OFF), open the .ino file and change:
+      #define RELAY_ACTIVE_LOW 1
+  to:
+      #define RELAY_ACTIVE_LOW 0
+
+------------------------------------------------------------------
+2) RELAY MODULE <-> LIGHT / FAN (HIGH VOLTAGE / AC SIDE)
+------------------------------------------------------------------
+For EACH relay channel (Light = channel 1, Fan = channel 2),
+you are inserting the relay INTO the LIVE (Phase/Hot) wire only.
+NEVER cut the Neutral wire.
+
+    AC Mains LIVE wire
+          |
+          v
+    [Wall Switch - optional, can bypass or keep in parallel]
+          |
+          v
+    Relay COM  ---- Relay NO (Normally Open)
+          |                  |
+          |                  v
+          |            To Light/Fan LIVE input
+          |
+    (Relay is inserted in series with the LIVE wire)
+
+    AC Mains NEUTRAL wire ------------------> Light/Fan NEUTRAL
+    (goes straight to the device, NOT through the relay)
+
+Step by step for the Light relay (channel 1):
+  a. Take the LIVE wire going to the light fixture.
+  b. Cut it at a convenient point.
+  c. One cut end -> Relay COM terminal
+  d. Relay NO terminal -> other cut end (which continues to the
+     light fixture)
+  e. NEUTRAL wire stays untouched, wired directly to the light.
+
+Repeat the same for the Fan relay (channel 2).
+
+  Use NC (Normally Closed) instead of NO only if you want the
+  device to be ON by default when the relay has no power/signal,
+  and turn OFF when triggered. For a normal "off by default,
+  turn on via app" setup, use NO (Normally Open) as shown above.
+
+------------------------------------------------------------------
+3) PIN SUMMARY
+------------------------------------------------------------------
+NodeMCU Pin   GPIO#    Connected To
+-----------   -----    --------------------------------
+3V3 / Vin     --       Relay module VCC
+GND           --       Relay module GND (common ground)
+D1            GPIO5    Relay IN1 (controls Light)
+D2            GPIO4    Relay IN2 (controls Fan)
+
+------------------------------------------------------------------
+4) POWER NOTES
+------------------------------------------------------------------
+- Power the NodeMCU via USB adapter (5V) as usual - it is
+  completely electrically isolated from the AC side by the relay
+  module's opto-isolator (most modules have one).
+- Some relay boards draw more current when both relays click at
+  once - if you see brownouts/resets, power NodeMCU's Vin/VCC
+  from a separate 5V supply instead of a laptop's USB port.
+- Double-check relay board silkscreen: VCC/GND/IN1/IN2 labels can
+  be positioned differently across brands - always confirm before
+  wiring.
+
+------------------------------------------------------------------
+5) HOW THE SYSTEM CONNECTS TOGETHER
+------------------------------------------------------------------
+  [Eye-control web app in browser]
+              |
+              |  HTTP GET request over WiFi (same network)
+              |  e.g. http://esp8266home.local/control?device=light&state=ON
+              v
+  [ESP8266 NodeMCU running ESP8266_EYECONTROL_RELAY.ino]
+              |
+              |  GPIO signal (3.3V logic)
+              v
+  [2-Channel Relay Module]
+              |
+              |  Switches 220V AC LIVE wire
+              v
+  [Light / Fan]
+
+  The web app checks http://esp8266home.local/ping every 10
+  seconds to show "ESP8266 Connected" / "ESP8266 Offline" status
+  on screen.
+
+  If mDNS (esp8266home.local) doesn't resolve on your network,
+  open the web app -> Smart Home -> ESP8266 IP -> type the IP
+  address shown in the Arduino Serial Monitor at boot, then Save.
+
+==================================================================
+END OF WIRING GUIDE
+==================================================================
